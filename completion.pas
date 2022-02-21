@@ -27,7 +27,7 @@ interface
 uses
   Classes, DateUtils, URIParser, 
   CodeToolManager, CodeCache, IdentCompletionTool, BasicCodeTools, CodeTree,
-  lsp, basic;
+  lsp, basic,FileProcs,CodeToolsUtil;
 
 type
 
@@ -253,13 +253,18 @@ uses
   codeUtils, diagnostics, settings;  
 
 function KindForIdentifier(Identifier: TIdentifierListItem): TCompletionItemKind;
+var desc:TCodeTreeNodeDesc;
 begin
   // the identifier has no node so we consider this a text item
+  // PredefinedIdentifiers no node ,use de
+
   if Identifier.Node = nil then
-    exit(TCompletionItemKind.TextItem);
+    desc:=Identifier.DefaultDesc
+  else
+    desc:= Identifier.Node.Desc;
 
   // get completion item kind from identifier node
-  case Identifier.Node.Desc of
+  case desc of
     ctnUnit,
     ctnUseUnit,
     ctnUseUnitClearName,
@@ -379,33 +384,47 @@ var
   IdentContext, IdentDetails: ShortString;
   ObjectMember: boolean;
   Kind: TCompletionItemKind;
+  DirectivesTool: TDirectivesTool;
+
 begin with Params do
   begin
     StartTime := Now;
-
+    
     URI := ParseURI(textDocument.uri);
     Code := CodeToolBoss.FindFile(URI.Path + URI.Document);
+    if Code=nil then
+       Code:=CodeToolBoss.LoadFile(URI.Path + URI.Document,true,false);
+
+    if Code=nil then
+       begin
+         DebugLn('Code NotFound:',URI.Path + URI.Document);
+         Result := TCompletionList.Create;
+         Result.isIncomplete:=false;
+         exit;
+       end;
+
     X := position.character;
     Y := position.line;
     Line := Code.GetLine(Y);
     GetIdentStartEndAtPosition(Line, X + 1, PStart, PEnd);
     CodeToolBoss.IdentifierList.Prefix := Copy(Line, PStart, PEnd - PStart);
-
     OverloadMap := TFPHashList.Create;
     Completions := TCompletionItems.Create;
     Result := TCompletionList.Create;
-
+    //CodeToolBoss.ExploreDirectives(code,DirectivesTool);
+    //DirectivesTool.WriteDebugReport;
     try
       if CodeToolBoss.GatherIdentifiers(Code, X + 1, Y + 1) then
-        begin    
+        begin   
+          
+    
           Count := CodeToolBoss.IdentifierList.GetFilteredCount;
           GatherTime := Now;
           IdentContext := '';
           IdentDetails := '';
           for I := 0 to Count - 1 do
             begin
-
-              // make sure we don't exceed the maximum completions count
+              // make sure we don't exceed the maximum completion.
               if (ServerSettings.maximumCompletions > -1) and (I >= ServerSettings.maximumCompletions) then
                 begin
                   Result.isIncomplete := true;

@@ -147,7 +147,8 @@ begin
   textDocumentSync := TTextDocumentSyncOptions.Create;
 
   textDocumentSync.save := TSaveOptions.Create(false);
-  textDocumentSync.change := TTextDocumentSyncKind.Full;
+  textDocumentSync.change := TTextDocumentSyncKind.Incremental;
+  //textDocumentSync.openClose:=False;
 
   workspace := TWorkspaceServerCapabilities.Create;
   workspace.workspaceFolders.supported := true;

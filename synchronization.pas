@@ -25,8 +25,8 @@ interface
 
 uses
   Classes, DateUtils, URIParser, 
-  CodeToolManager, CodeCache,
-  lsp, basic;
+  CodeToolManager, CodeCache,FileProcs,
+  lsp, basic,CodeToolsUtil;
 
 type
 
@@ -160,11 +160,21 @@ begin with Params do
     if Code <> nil then
       Code.Source := textDocument.text;
 
+
+
     // the file was not found in search paths so
     // it need to be loaded from disk
     if Code = nil then
       Code := CodeToolBoss.LoadFile(Path, False, False);
-      
+
+    //rename file will failue ,need CreateFile ,It not create file in disk.(s)
+    if Code = nil then
+      begin
+        Code :=CodeToolBoss.CreateFile(Path);
+        Code.Source:=textDocument.text;
+      end;
+    //CodeUtilBoss.WriteUnitDirectives(code);
+
     CheckSyntax(Code);
 
     //if SymbolManager <> nil then
@@ -219,23 +229,30 @@ var
   StartTime: TDateTime;
 begin with Params do
   begin
+
     StartTime := Now;
     URI := ParseURI(textDocument.uri);
     Code := CodeToolBoss.FindFile(URI.Path + URI.Document);
+    if Code=nil then
+      Code := CodeToolBoss.LoadFile(URI.Path + URI.Document,true,false);
+    if Code=nil then
+      exit;
     for Change in contentChanges do
       begin
         // note(ryan): can't get this working yet
         // and I'm not even sure if it's worth it
-        {Range := TTextDocumentContentChangeEvent(Change).range;
+        Range := TTextDocumentContentChangeEvent(Change).range;
         if Range <> nil then
           begin
-            //Code.LineColToPosition(Range.start.line + 1, Range.start.character + 1, StartPos);
-            //Code.LineColToPosition(Range.&end.line + 1, Range.&end.character + 1, EndPos);
-            writeln(StdErr, 'insert: ', StartPos,' -> ',EndPos, ' text=',TTextDocumentContentChangeEvent(Change).text);
-            //Code.Replace(StartPos, EndPos - StartPos, TTextDocumentContentChangeEvent(Change).text);
+            Code.LineColToPosition(Range.start.line + 1, Range.start.character + 1, StartPos);
+            Code.LineColToPosition(Range.&end.line + 1, Range.&end.character + 1, EndPos);
+            //DebugLn(['insert: ', StartPos,' -> ',EndPos, ' text=',TTextDocumentContentChangeEvent(Change).text]);
+            Code.Replace(StartPos, EndPos - StartPos, TTextDocumentContentChangeEvent(Change).text);
           end
-        else}
-        Code.Source := TTextDocumentContentChangeEvent(Change).text;
+        else
+            Code.Source := TTextDocumentContentChangeEvent(Change).text;
+
+        //DebugLn(code.Source);
 
         //if SymbolManager <> nil then
         //  SymbolManager.FileModified(Code);

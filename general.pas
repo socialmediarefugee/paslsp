@@ -28,8 +28,8 @@ uses
   {$ifdef FreePascalMake}
   FPMConfig,
   {$endif}
-  Classes, CodeToolManager, CodeToolsConfig, URIParser, LazUTF8,
-  lsp, basic, capabilities, documentSymbol, settings;
+  Classes, CodeToolManager, CodeToolsConfig, LinkScanner,URIParser, LazUTF8,
+  lsp, basic, capabilities, documentSymbol, settings,FileProcs;
 
 type
 
@@ -108,6 +108,7 @@ type
 
   TInitialize = class(specialize TLSPRequest<TInitializeParams, TInitializeResult>)
     function Process(var Params : TInitializeParams): TInitializeResult; override;
+
   end;
 
   { TInitialized }
@@ -145,7 +146,7 @@ type
 
 implementation
 uses
-  SysUtils, RegExpr, DefineTemplates;
+  SysUtils, RegExpr,DefineTemplates,CodeToolsUtil;
 
 { TInitializeParams }
 
@@ -188,6 +189,10 @@ const
     writeln(StdErr, kStatusPrefix+'FPCSrcDir: ', CodeToolsOptions.FPCSrcDir);
     writeln(StdErr, kStatusPrefix+'TargetOS: ', CodeToolsOptions.TargetOS);
     writeln(StdErr, kStatusPrefix+'TargetProcessor: ', CodeToolsOptions.TargetProcessor);
+
+    writeln(StdErr, kStatusPrefix+'LazarusSrcDir: ', CodeToolsOptions.LazarusSrcDir);
+    writeln(StdErr, kStatusPrefix+'LazarusSrcOptions: ', CodeToolsOptions.LazarusSrcOptions);
+
 
     writeln(StdErr, kStatusPrefix+'Working directory: ', GetCurrentDir);
 
@@ -327,7 +332,7 @@ var
 begin with Params do
   begin
     CodeToolsOptions := TCodeToolsOptions.Create;
-
+  
     // TODO: we need to copy this or implement ref counting
     // once we figure out how memory is going to work with
     // the JSON-RPC streaming model
@@ -347,7 +352,7 @@ begin with Params do
         URI := ParseURI(rootUri);
         CodeToolsOptions.ProjectDir := URI.Path + URI.Document;
       end;
-
+    
     // print the root URI so we know which workspace folder is default
     writeln(StdErr, '► RootURI: ', rootUri);
     writeln(StdErr, '► ProjectDir: ', CodeToolsOptions.ProjectDir);
@@ -452,7 +457,11 @@ begin with Params do
         ShowConfigStatus(CodeToolsOptions);
       end;
     re.Free;
+
     
+    //path:=CodeToolBoss.GetUnitPathForDirectory('/Applications/Lazarus/lcl');
+    //DebugLn('lclpath:',Path);
+
     with CodeToolBoss do
       begin
         Init(CodeToolsOptions);
@@ -464,6 +473,7 @@ begin with Params do
     Result.capabilities := ServerCapabilities;
   end;
 end;
+
 
 { TInitialized }
 

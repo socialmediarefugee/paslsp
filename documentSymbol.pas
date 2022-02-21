@@ -20,14 +20,14 @@
 unit documentSymbol;
 
 {$mode objfpc}{$H+}
-{define SYMBOL_DEBUG}
+{define NSYMBOL_DEBUG}
 
 interface
 
 uses
-  Classes, Contnrs, URIParser, fpjson, fpjsonrpc, SQLite3,
+  Classes, Contnrs, URIParser, fpjson, fpjsonrpc, //SQLite3,
   CodeToolManager, CodeCache, CodeTree, LinkScanner,
-  lsp, basic, codeUtils;
+  lsp, basic, codeUtils,fileprocs;
 
 type
   TSymbolKind = (
@@ -228,7 +228,7 @@ type
     constructor Create(_Entry: TSymbolTableEntry; _Code: TCodeBuffer; _Tool: TCodeTool);
     destructor Destroy; override;
   end;
-
+{$IFDEF SQLDB}
   { TSQLiteDatabase }
 
   TSQLiteDatabase = class
@@ -259,21 +259,24 @@ type
     function FileModified(Path: String): boolean;
     procedure InsertFile(Path: String);
   end;
-
+{$ENDIF}
   { TSymbolManager }
 
   TSymbolManager = class
   private
     SymbolTable: TFPHashObjectList;
     ErrorList: TStringList;
+{$IFDEF SQLDB}    
     fDatabase: TSymbolDatabase;
-
+{$ENDIF}
     function Load(Path: String): TCodeBuffer;
     procedure RemoveFile(FileName: String);
     procedure AddError(Message: String); 
     function GetEntry(Code: TCodeBuffer): TSymbolTableEntry;
+{$IFDEF SQLDB}
     function GetDatabase: TSymbolDatabase; inline;
     property Database: TSymbolDatabase read GetDatabase;
+{$ENDIF}
   public
 
     { Constructors }
@@ -419,12 +422,14 @@ function TSymbolTableEntry.GetRawJSON: String;
 var
   JSON: TJSONSerializedArray;
 begin
+  {$IFDEF SQLDB}
   if (fRawJSON = '') and (SymbolManager.Database <> nil) then
     begin
       JSON := SymbolManager.Database.FindAllSymbols(Code.FileName);
       fRawJSON := JSON.AsJson;
       JSON.Free;
     end;
+  {$ENDIF}
   Result := fRawJSON;
 end;
 
@@ -435,12 +440,13 @@ end;
 
 function TSymbolTableEntry.RequestReload: boolean;
 var
-  Database: TSymbolDatabase;
+  {$IFDEF SQLDB}Database: TSymbolDatabase;{$ENDIF}
   Path: String;
   JSON: TJSONSerializedArray;
 begin
   if Modified then
     exit(true);
+  {$IFDEF SQLDB}
   Database := SymbolManager.Database;
   Path := Code.FileName;
   Result := false;
@@ -455,6 +461,7 @@ begin
         end;
     end
   else
+  {$ENDIF}
     Result := true;
 end;
 
@@ -489,6 +496,7 @@ begin
     end;
 
   // if a database is available then insert serialized symbols in batches
+  {$IFDEF SQLDB}
   if SymbolManager.Database <> nil then
     begin
       Next := 0;
@@ -503,6 +511,7 @@ begin
           Start := Next + 1;
         end;
     end;
+    {$ENDIF}
 
   fRawJSON := SerializedItems.AsJSON;
 
@@ -514,8 +523,10 @@ procedure TSymbolTableEntry.Clear;
 begin
   Modified := false;
   Symbols.Clear;
+  {$IFDEF SQLDB}
   if SymbolManager.Database <> nil then
     SymbolManager.Database.ClearSymbols(Code.FileName);
+  {$ENDIF}
 end;
 
 destructor TSymbolTableEntry.Destroy; 
@@ -538,7 +549,7 @@ var
   Child: TCodeTreeNode;
 begin
   {$ifdef SYMBOL_DEBUG}
-  writeln(IndentLevelString(IndentLevel), Node.DescAsString, ' (', GetIdentifierAtPos(Tool, Node.StartPos, true, true), ') -> ', Node.ChildCount);
+  debugln([IndentLevelString(IndentLevel), Node.DescAsString, ' (', GetIdentifierAtPos(Tool, Node.StartPos, true, true), ') -> ', Node.ChildCount]);
   if Deep then
     begin
       Child := Node.FirstChild;
@@ -567,7 +578,7 @@ var
   FileName: String;
 begin
   {$ifdef SYMBOL_DEBUG}
-  writeln(IndentLevelString(IndentLevel + 1), '* ', Name);
+  DebugLn([IndentLevelString(IndentLevel + 1), '* ',SymbolKindToString(Kind),' ', Name]);
   {$endif}
 
   Tool.CleanPosToCaret(Node.StartPos, CodePos);
@@ -576,6 +587,7 @@ begin
   // we don't know which include files are associated
   // with each unit so we need to check each time
   // a symbol is added
+  {$IFDEF SQLDB}
   if SymbolManager.Database <> nil then
     begin
       FileName := ExtractFileName(CodePos.Code.FileName);
@@ -585,6 +597,7 @@ begin
           RelatedFiles.Add(FileName, @CodePos);
         end;
     end;
+  {$ENDIF}
     
   Result := Entry.AddSymbol(Name, Kind, CodePos.Code.FileName, CodePos.Y, CodePos.X, Node.EndPos - Node.StartPos);
 end;
@@ -850,7 +863,7 @@ begin
   RelatedFiles.Free;
   inherited;
 end;
-
+{$IFDEF SQLDB}
 { TSQLiteDatabase }
 
 procedure TSQLiteDatabase.LogError(errmsg: pansichar); 
@@ -1098,7 +1111,7 @@ begin
     fDatabase := TSymbolDatabase.Create(ExpandFileName(ServerSettings.symbolDatabase));
   Result := fDatabase;
 end;
-
+{$ENDIF}
 
 procedure TSymbolManager.RemoveFile(FileName: String);
 var
@@ -1116,6 +1129,7 @@ function TSymbolManager.FindWorkspaceSymbols(Query: String): TJSONSerializedArra
 const
   WILDCARD_QUERY = '*';
 begin
+  {$IFDEF SQLDB}
   if (Database <> nil) and (Query <> '') {and (Query <> WILDCARD_QUERY)} then
     begin
       if Query = WILDCARD_QUERY then
@@ -1123,7 +1137,9 @@ begin
       result := Database.FindSymbols(Query);
     end
   else
+  {$ENDIF}
     result := CollectSerializedSymbols;
+  
 end;
 
 {
@@ -1304,7 +1320,7 @@ begin
   if not CodeToolBoss.Explore(Code, Tool, false, false) then
     begin
       {$ifdef SYMBOL_DEBUG}
-      writeln(StdErr, ExtractFileName(Code.FileName), ' -> ', CodeToolBoss.ErrorMessage+' @ '+IntToStr(CodeToolBoss.ErrorLine)+':'+IntToStr(CodeToolBoss.ErrorColumn));
+      DebugLn([ExtractFileName(Code.FileName), ' -> ', CodeToolBoss.ErrorMessage+' @ '+IntToStr(CodeToolBoss.ErrorLine)+':'+IntToStr(CodeToolBoss.ErrorColumn)]);
       {$endif}
       // todo: these errors are overwhelming on startup so we probably need a better way
       //AddError(ExtractFileName(Code.FileName)+' -> '+CodeToolBoss.ErrorMessage+' @ '+IntToStr(CodeToolBoss.ErrorLine)+':'+IntToStr(CodeToolBoss.ErrorColumn));
