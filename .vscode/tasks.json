@@ -1,0 +1,62 @@
+{
+	"version": "2.0.0",
+	
+	"tasks": [
+		{
+			"label": "debug",
+			"file": "pasls.lpr",
+			"type": "fpc",
+			"presentation": {
+				"showReuseMessage": false,
+				"clear": true,
+				"revealProblems": "onProblem"
+			},
+			"buildOption": {
+				"unitOutputDir": "./out",
+				"targetCPU": "x86_64",
+				"targetOS": "Darwin",
+				"outputFile": "",
+				"customOptions": [
+					"-dSYMBOL_DEBUG",
+					//"-dDEBUG",
+					"-dCTDEBUG",
+					"-MObjFPC",
+					"-Scaghi",
+					"-CirotR",
+					"-O1",
+					"-gw2",
+					"-l",
+					"-Filib/x86_64-darwin",
+					"-Fu/Applications/Lazarus/components/fpweb/lib/x86_64-darwin",
+					//"-Fu/Applications/Lazarus/components/sqldb/lib/x86_64-darwin/cocoa",
+					"-Fu/Applications/Lazarus/components/ideintf/units/x86_64-darwin/cocoa",
+					"-Fu/Applications/Lazarus/components/synedit/units/x86_64-darwin/cocoa",
+					"-Fu/Applications/Lazarus/components/lazcontrols/lib/x86_64-darwin/cocoa",
+					"-Fu/Applications/Lazarus/lcl/units/x86_64-darwin/cocoa",
+					"-Fu/Applications/Lazarus/lcl/units/x86_64-darwin",
+					"-Fu/Applications/Lazarus/lcl",
+					"-Fu/Applications/Lazarus/components/freetype/lib/x86_64-darwin",
+					"-Fu/Applications/Lazarus/components/codetools/units/x86_64-darwin",
+					"-Fu/Applications/Lazarus/components/buildintf/units/x86_64-darwin",
+					"-Fu/Applications/Lazarus/components/lazutils/lib/x86_64-darwin",
+					"-Fu/Applications/Lazarus/packager/units/x86_64-darwin",
+					"-Fi/Applications/Lazarus/components/codetools",
+					"-Fi/Applications/Lazarus/components/lazutils",
+					"-Fu/Applications/Lazarus/components/codetools",
+					"-Fu/Applications/Lazarus/components/lazutils",
+					"-Fu.",
+					"-FElib/x86_64-darwin",
+					"-o../fpctoolkit/bin/x86_64-drawin/pasls",
+					"-dLCL",
+					"-dLCLcocoa"
+				]
+			},
+			"problemMatcher": [],
+			"group": {
+				"kind": "build",
+				"isDefault": true
+			}
+		}
+	],
+	
+}
