@@ -1,13 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <CONFIG>
   <ProjectOptions>
-    <Version Value="11"/>
+    <Version Value="12"/>
     <General>
       <Flags>
         <MainUnitHasCreateFormStatements Value="False"/>
+        <MainUnitHasTitleStatement Value="False"/>
+        <MainUnitHasScaledStatement Value="False"/>
+        <CompatibilityMode Value="True"/>
       </Flags>
       <SessionStorage Value="InProjectDir"/>
-      <MainUnit Value="0"/>
       <Title Value="pasls"/>
       <UseAppBundle Value="False"/>
       <ResourceType Value="res"/>
@@ -23,6 +25,8 @@
           </SearchPaths>
           <CodeGeneration>
             <SmartLinkUnit Value="True"/>
+            <TargetCPU Value="x86_64"/>
+            <TargetOS Value="linux"/>
             <Optimizations>
               <OptimizationLevel Value="3"/>
             </Optimizations>
@@ -42,20 +46,16 @@
     </PublishOptions>
     <RunParams>
       <FormatVersion Value="2"/>
-      <Modes Count="0"/>
     </RunParams>
-    <RequiredPackages Count="3">
+    <RequiredPackages Count="2">
       <Item1>
-        <PackageName Value="CodeTools"/>
+        <PackageName Value="LCLBase"/>
       </Item1>
       <Item2>
-        <PackageName Value="WebLaz"/>
+        <PackageName Value="CodeTools"/>
       </Item2>
-      <Item3>
-        <PackageName Value="FCL"/>
-      </Item3>
     </RequiredPackages>
-    <Units Count="8">
+    <Units Count="10">
       <Unit0>
         <Filename Value="pasls.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -88,10 +88,22 @@
         <Filename Value="basic.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit7>
+      <Unit8>
+        <Filename Value="codetoolsutil.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="CodeToolsUtil"/>
+      </Unit8>
+      <Unit9>
+        <Filename Value="hover.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit9>
     </Units>
   </ProjectOptions>
   <CompilerOptions>
     <Version Value="11"/>
+    <Target>
+      <Filename Value="lib/$(TargetCPU)-$(TargetOS)/pasls"/>
+    </Target>
     <SearchPaths>
       <IncludeFiles Value="$(ProjOutDir)"/>
       <UnitOutputDirectory Value="lib/$(TargetCPU)-$(TargetOS)"/>
@@ -109,21 +121,16 @@
         <StackChecks Value="True"/>
       </Checks>
       <VerifyObjMethodCallValidity Value="True"/>
+      <TargetCPU Value="x86_64"/>
+      <TargetOS Value="linux"/>
     </CodeGeneration>
-    <Linking>
-      <!-- <Debugging>
-        <DebugInfoType Value="dsDwarf2Set"/>
-        <UseHeaptrc Value="True"/>
-        <TrashVariables Value="True"/>
-        <UseExternalDbgSyms Value="True"/>
-      </Debugging> -->
-    </Linking>
     <Other>
       <Verbosity>
-        <ShowWarn Value="True"/>
         <ShowNotes Value="False"/>
         <ShowHints Value="False"/>
+        <ShowAll Value="True"/>
       </Verbosity>
+      <WriteFPCLogo Value="False"/>
       <CustomOptions Value="-dx86_64 -gw -godwarfcpp"/>
     </Other>
   </CompilerOptions>
