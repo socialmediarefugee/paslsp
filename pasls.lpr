@@ -31,7 +31,10 @@ uses
   { Protocols }
   basic, synchronization, completion, gotoDeclaration, gotoDefinition, 
   gotoImplementation, hover, signatureHelp, references, codeAction, 
-  documentHighlight, documentSymbol, workspace, window;
+  documentHighlight, documentSymbol, workspace, window,
+
+  {Other}
+   LazLoggerBase;
 
 const
   ContentType = 'application/vscode-jsonrpc; charset=utf-8';
@@ -40,6 +43,20 @@ type
   TTestNotification = class(specialize TLSPNotification<TShowMessageParams>)
     procedure Process(var Params : TShowMessageParams); override;
   end;
+
+  { TMyLogger }
+
+  TMyLogger=class(TLazLogger)
+    procedure DoDebugLn(s: string); override;
+  end;
+
+{ TMyLogger }
+
+procedure TMyLogger.DoDebugLn(s: string);
+begin
+  WriteLn(StdErr,s);
+  Flush(StdErr);
+end;
 
 procedure TTestNotification.Process(var Params : TShowMessageParams);
 begin
@@ -71,6 +88,7 @@ begin
     writeln(data.AsJSON);
 end;
 
+procedure RunConsole;
 var
   Dispatcher: TLSPDispatcher;
   Header, Name, Value, Content: string;
@@ -146,4 +164,12 @@ begin
 
     Request.Free;
   end;
+end;
+var log:TMyLogger;
+begin
+  log:=TMyLogger.Create;
+  SetDebugLogger(log);
+  
+  RunConsole;
+  log.Free;
 end.
