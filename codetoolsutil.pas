@@ -7,8 +7,10 @@ interface
 uses
   Classes, SysUtils, FileProcs, LazUtils,LCLProc,
   // Codetools
-  Laz_AVL_Tree, ExprEval,DefineTemplates,CodeToolManager,CodeCache,LinkScanner,
-  BasicCodeTools;
+  Laz_AVL_Tree, ExprEval,DefineTemplates,CodeToolManager,CodeCache,LinkScanner,sourcelog,
+  BasicCodeTools,
+  //pasls
+  inactiveRegions;
 
 type
   TCodeToolsDefinesNodeValues = class
@@ -43,6 +45,8 @@ type
     procedure AddCustomMacro;
     procedure WriteDefinesDebugReport;
     procedure WriteUnitDirectives(Code: TCodeBuffer);
+
+    procedure CheckInactiveRegion(Code:TCodeBuffer;uri:String);
   published
   end;
 
@@ -195,6 +199,7 @@ begin
   if Code=nil then
     exit;
 
+
   // parse the unit
   if not CodeToolBoss.ExploreUnitDirectives(Code,Scanner) then
     raise Exception.Create('parser error');
@@ -232,7 +237,72 @@ begin
 
   DebugLn('-----------------------------------------------');
 end;
+procedure TCodeToolsUtil.CheckInactiveRegion(Code:TCodeBuffer;uri:String);
+var   
+  notify:TInactiveRegionsNotification;
+  regions:TRegionsItems;
+  input:TInputRegion;
+  Scanner: TLinkScanner;
+  i: Integer;
+  Dir: PLSDirective;
+  isAdd:Boolean;
+  cursorPos:Integer;
+  acode:Pointer;
+  line,col:Integer;
 
+begin
+  if Code=nil then
+    exit;
+  
+  // parse the unit
+  if not CodeToolBoss.ExploreUnitDirectives(Code,Scanner) then
+     exit;
+  isAdd:=False;
+  regions:=TRegionsItems.Create;
+  try
+    for i:=0 to Scanner.DirectiveCount-1 do begin
+      Dir:=Scanner.Directives[i];
+    
+      DebugLn([i,'/',Scanner.DirectiveCount,
+        ' CleanPos=',Dir^.CleanPos,'=',Scanner.CleanedPosToStr(Dir^.CleanPos),
+        ' Level=',Dir^.Level,' ',dbgs(Dir^.State),
+        ' "',ExtractCommentContent(Scanner.CleanedSrc,Dir^.CleanPos,Scanner.NestedComments),'"']
+        );
+      if Dir^.State=lsdsInactive then
+      begin
+        if not isAdd then
+        begin
+          input:=TInputRegion(regions.Add);
+          Scanner.CleanedPosToCursor(Dir^.CleanPos,cursorPos,acode);
+          TSourceLog(acode).AbsoluteToLineCol(cursorPos,line,col);
+          input.startline:=line;
+          isAdd:=True;
+        end;
+      end
+      else if Dir^.State=lsdsActive then
+      begin
+        if isAdd then
+        begin
+          Scanner.CleanedPosToCursor(Dir^.CleanPos,cursorPos,acode);
+          TSourceLog(acode).AbsoluteToLineCol(cursorPos,line,col);
+          input.endline:=line-1;
+          isAdd:=False;  
+        end;
+      end;
+    end;
+    if input.endline=0 then
+    begin
+      input.endline:=999999;
+    end;
+    
+    notify := TInactiveRegionsNotification.Create(uri,regions);
+    notify.Send;
+    notify.Free;  
+    
+  finally
+    regions.Free;
+  end;
+end;
 initialization
 CodeUtilBoss:=TCodeToolsUtil.Create;
 finalization

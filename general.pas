@@ -332,27 +332,34 @@ var
 begin with Params do
   begin
     CodeToolsOptions := TCodeToolsOptions.Create;
-  
+
     // TODO: we need to copy this or implement ref counting
     // once we figure out how memory is going to work with
     // the JSON-RPC streaming model
     ServerSettings := initializationOptions;
     settings.ClientInfo := clientInfo;
 
+    URIToFilename(rootUri,Path);
     // replace macros in server settings
     Macros := TMacroMap.Create;
     Macros.Add('tmpdir', GetTempDir(true));
-    Macros.Add('root', ParseURI(rootUri).path);
+    Macros.Add('root', Path);
 
     ServerSettings.ReplaceMacros(Macros);
 
     // set the project directory based on root URI path
     if rootUri <> '' then
       begin
-        URI := ParseURI(rootUri);
-        CodeToolsOptions.ProjectDir := URI.Path + URI.Document;
+        if ServerSettings.cwd='' then
+        begin
+          CodeToolsOptions.ProjectDir := path;//URI.Path + URI.Document;        
+        end;
       end;
-    
+    if ServerSettings.cwd<>'' then
+    begin
+      CodeToolsOptions.ProjectDir:=ServerSettings.cwd;
+    end;
+  
     // print the root URI so we know which workspace folder is default
     writeln(StdErr, '► RootURI: ', rootUri);
     writeln(StdErr, '► ProjectDir: ', CodeToolsOptions.ProjectDir);
@@ -412,8 +419,8 @@ begin with Params do
 
             for Item in workspaceFolders do
               begin
-                URI := ParseURI(TWorkspaceFolder(Item).uri);
-                FindPascalSourceDirectories(URI.Path + URI.Document, Paths);
+                URIToFilename(TWorkspaceFolder(Item).uri,Path);
+                FindPascalSourceDirectories(Path, Paths);
               end;
             
             for Path in Paths do
@@ -458,15 +465,12 @@ begin with Params do
       end;
     re.Free;
 
-    
-    //path:=CodeToolBoss.GetUnitPathForDirectory('/Applications/Lazarus/lcl');
-    //DebugLn('lclpath:',Path);
-
     with CodeToolBoss do
       begin
         Init(CodeToolsOptions);
         IdentifierList.SortForHistory := True;
         IdentifierList.SortForScope := True;
+        //CatchExceptions:=True;
       end;
 
     Result := TInitializeResult.Create;

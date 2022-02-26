@@ -151,10 +151,11 @@ var
   URI: TURI;
   Path: String;
   Code: TCodeBuffer;
+  DirectivesTool: TDirectivesTool;
+
 begin with Params do
   begin
-    URI := ParseURI(textDocument.uri);
-    Path := URI.Path + URI.Document;
+    Path := UriToFilenameEx(textDocument.uri);
 
     Code := CodeToolBoss.FindFile(Path);
     if Code <> nil then
@@ -173,10 +174,12 @@ begin with Params do
         Code :=CodeToolBoss.CreateFile(Path);
         Code.Source:=textDocument.text;
       end;
-    //CodeUtilBoss.WriteUnitDirectives(code);
 
     CheckSyntax(Code);
+    CodeUtilBoss.CheckInactiveRegion(Code,textDocument.uri);
 
+    //CodeToolBoss.ExploreDirectives(code,DirectivesTool);
+    //DirectivesTool.WriteDebugReport;
     //if SymbolManager <> nil then
     //  SymbolManager.FileModified(Code);
     if SymbolManager <> nil then
@@ -188,16 +191,15 @@ end;
 
 procedure TDidSaveTextDocument.Process(var Params : TDidSaveTextDocumentParams);
 var
-  URI: TURI;
   Code: TCodeBuffer;
 begin with Params do
   begin
-    URI := ParseURI(textDocument.uri);
-    Code := CodeToolBoss.FindFile(URI.Path + URI.Document);
+    Code := CodeToolBoss.FindFile(UriToFilenameEx(textDocument.uri));
     if SymbolManager <> nil then
       SymbolManager.FileModified(Code);
     CheckSyntax(Code);
     ClearDiagnostics(Code);
+    CodeUtilBoss.CheckInactiveRegion(Code,textDocument.uri);
   end;
 end;
 
@@ -209,10 +211,12 @@ var
   Code: TCodeBuffer;
 begin with Params do
   begin
-    URI := ParseURI(textDocument.uri);
+    //URI := ParseURI(textDocument.uri);
     // TODO: clear errors
     // TODO: if the file was manually loaded (i.e. not in search paths)
     // then we may want to remove it from the symbol table so it doesn't cause clutter
+    
+    
   end;
 end;
 
@@ -221,20 +225,23 @@ end;
 
 procedure TDidChangeTextDocument.Process(var Params : TDidChangeTextDocumentParams);
 var
-  URI: TURI;
+  
   Code: TCodeBuffer;
   Change: TCollectionItem;
   Range: TRange;
   StartPos, EndPos: integer;
   StartTime: TDateTime;
+  fileName:string;
+
+
 begin with Params do
   begin
 
     StartTime := Now;
-    URI := ParseURI(textDocument.uri);
-    Code := CodeToolBoss.FindFile(URI.Path + URI.Document);
+    fileName:=UriToFilenameEx(textDocument.uri);
+    Code := CodeToolBoss.FindFile(fileName);
     if Code=nil then
-      Code := CodeToolBoss.LoadFile(URI.Path + URI.Document,true,false);
+      Code := CodeToolBoss.LoadFile(fileName,true,false);
     if Code=nil then
       exit;
     for Change in contentChanges do
@@ -260,6 +267,7 @@ begin with Params do
       //writeln(StdErr, 'Synched text in ', MilliSecondsBetween(Now, StartTime),'ms');
       //Flush(StdErr);
     end;
+
 end;
 
 initialization

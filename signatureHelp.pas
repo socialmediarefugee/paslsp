@@ -188,7 +188,6 @@ function TSignatureHelpRequest.Process(var Params: TTextDocumentPositionParams):
   end;
 
 var
-  URI: TURI;
   Code: TCodeBuffer;
   X, Y, I, ItemIndex: Integer;
   CodeContext: TCodeContextInfo;
@@ -200,15 +199,14 @@ var
   ParamList: TStringList;
 begin with Params do
   begin
-    URI := ParseURI(textDocument.uri);
-    Code := CodeToolBoss.FindFile(URI.Path + URI.Document);
+    Code := CodeToolBoss.FindFile(UriToFilenameEx(textDocument.uri));
     X := position.character;
     Y := position.line;
     CodeContext := nil;
     try
       if not CodeToolBoss.FindCodeContext(Code, X + 1, Y + 1, CodeContext) or (CodeContext = nil) or (CodeContext.Count = 0) then
         begin
-          PublishDiagnostic;
+          //PublishDiagnostic;
           exit(nil);
         end;
 

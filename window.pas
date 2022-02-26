@@ -52,11 +52,14 @@ type
   private
     fType: TMessageType;
     fMessage: string;
+    fHasFile: Boolean;
   published
     // The message type.
     property &type: TMessageType read fType write fType;
     // The actual message.
     property message: string read fMessage write fMessage;
+    // The Unit File
+    property hasFile: Boolean read fHasFile write fHasFile;
   end;
 
   { TShowMessageNotification }
@@ -65,7 +68,7 @@ type
 
   TShowMessageNotification = class(TNotificationMessage)
   public
-    constructor Create(_type: TMessageType; Message: String);
+    constructor Create(_type: TMessageType; Message: String;_hasfile:Boolean=False);
     destructor Destroy; override;
   end;
 
@@ -103,11 +106,12 @@ implementation
 
 { TShowMessageNotification }
 
-constructor TShowMessageNotification.Create(_type: TMessageType; Message: String);
+constructor TShowMessageNotification.Create(_type: TMessageType; Message: String;_hasfile:Boolean);
 begin
   params := TShowMessageParams.Create;
   TShowMessageParams(params).&type := _type;
   TShowMessageParams(params).message := Message;
+  TShowMessageParams(params).hasFile := _hasfile;
   method := 'window/showMessage';
 end;
 

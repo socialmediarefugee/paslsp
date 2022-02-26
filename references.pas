@@ -183,7 +183,6 @@ end;
 
 function TReferencesRequest.Process(var Params: TReferenceParams): TLocationItems;
 var
-  URI: TURI;
   Path: String;
   X, Y: Integer;
   List: TFPList;
@@ -193,8 +192,7 @@ var
   Loc: TLocationItem;
 begin with Params do
   begin
-    URI := ParseURI(textDocument.uri);
-    Path := URI.Path + URI.Document;
+    Path := UriToFilenameEx(textDocument.uri);
     X := position.character;
     Y := position.line;
 

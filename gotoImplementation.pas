@@ -41,7 +41,6 @@ uses
   
 function TGotoImplementation.Process(var Params: TTextDocumentPositionParams): TLocation;
 var
-  URI: TURI;
   Code: TCodeBuffer;
   NewCode: TCodeBuffer;
   X, Y: Integer;
@@ -49,8 +48,7 @@ var
   RevertableJump: boolean;
 begin with Params do
   begin
-    URI := ParseURI(textDocument.uri);
-    Code := CodeToolBoss.FindFile(URI.Path + URI.Document);
+    Code := CodeToolBoss.FindFile(UriToFilenameEx(textDocument.uri));
     X := position.character;
     Y := position.line;
 
@@ -63,7 +61,7 @@ begin with Params do
       end
     else
       begin
-        PublishDiagnostic;
+        //PublishDiagnostic;
         Result := nil;
       end;
   end;

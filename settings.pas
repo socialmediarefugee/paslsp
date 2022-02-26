@@ -49,7 +49,10 @@ type
     fMaximumCompletions: Integer;
     fOverloadPolicy: TOverloadPolicy;
     fConfig: String;
+    fcwd:String;
   published
+    //current work path
+    property cwd: String read Fcwd write Fcwd;
     // Path to the main program file for resolving references
     // if not available the path of the current document will be used
     property &program: String read fProgram write fProgram;

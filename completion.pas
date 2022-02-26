@@ -27,7 +27,7 @@ interface
 uses
   Classes, DateUtils, URIParser, 
   CodeToolManager, CodeCache, IdentCompletionTool, BasicCodeTools, CodeTree,
-  lsp, basic,FileProcs,CodeToolsUtil;
+  lsp, basic,FileProcs,CodeToolsUtil,sourcelog;
 
 type
 
@@ -384,20 +384,21 @@ var
   IdentContext, IdentDetails: ShortString;
   ObjectMember: boolean;
   Kind: TCompletionItemKind;
-  DirectivesTool: TDirectivesTool;
+
+  errorPos:Integer;
+  fileName:String;
 
 begin with Params do
   begin
     StartTime := Now;
-    
-    URI := ParseURI(textDocument.uri);
-    Code := CodeToolBoss.FindFile(URI.Path + URI.Document);
+    URIToFilename(textDocument.uri,fileName);
+    Code := CodeToolBoss.FindFile(fileName);
     if Code=nil then
-       Code:=CodeToolBoss.LoadFile(URI.Path + URI.Document,true,false);
+       Code:=CodeToolBoss.LoadFile(fileName,true,false);
 
     if Code=nil then
        begin
-         DebugLn('Code NotFound:',URI.Path + URI.Document);
+         DebugLn('Code NotFound:',fileName);
          Result := TCompletionList.Create;
          Result.isIncomplete:=false;
          exit;
@@ -411,9 +412,9 @@ begin with Params do
     OverloadMap := TFPHashList.Create;
     Completions := TCompletionItems.Create;
     Result := TCompletionList.Create;
-    //CodeToolBoss.ExploreDirectives(code,DirectivesTool);
-    //DirectivesTool.WriteDebugReport;
+
     try
+      
       if CodeToolBoss.GatherIdentifiers(Code, X + 1, Y + 1) then
         begin   
           

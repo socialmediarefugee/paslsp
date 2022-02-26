@@ -69,7 +69,6 @@ implementation
 
 function TDocumentHighlightRequest.Process(var Params: TDocumentHighlightParams): TDocumentHighlightItems;
 var
-  URI: TURI;
   Code: TCodeBuffer;
   X, Y: Integer;
   NewCode: TCodeBuffer;
@@ -78,8 +77,7 @@ var
   Identifier: String;
 begin with Params do
   begin
-    URI := ParseURI(textDocument.uri);
-    Code := CodeToolBoss.FindFile(URI.Path + URI.Document);
+    Code := CodeToolBoss.FindFile(UriToFilenameEx(textDocument.uri));
     X := position.character;
     Y := position.line;
     Result := nil;

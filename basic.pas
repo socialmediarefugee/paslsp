@@ -470,18 +470,22 @@ const
 { Utilities }
 
 function PathToURI(path: String): TDocumentUri;
-
+function UriToFilenameEx(uri:String):String;
 implementation
 uses
-  fpjson, lsp;
+  fpjson, lsp,URIParser;
 
 { Utilities }
 
 function PathToURI(path: String): TDocumentUri;
 begin
-  result := 'file://'+path;
+  Result:= FilenameToURI(path);
 end;
 
+function UriToFilenameEx(uri:String):String;
+begin
+    UriToFilename(uri,Result);
+end;
 { TAbstractMessage }
 
 function TAbstractMessage.GetJSONRPC: String;

@@ -90,6 +90,7 @@ var
   ShowMessage: TShowMessageNotification;
   FileName, 
   MessageString: String;
+  hasfile:Boolean;
 begin
   
   if UserMessage <> '' then
@@ -97,9 +98,15 @@ begin
   else
     begin
       if CodeToolBoss.ErrorCode <> nil then
-        MessageString := CodeToolBoss.ErrorCode.FileName+': "'+CodeToolBoss.ErrorMessage+'" @ '+IntToStr(CodeToolBoss.ErrorLine)+':'+IntToStr(CodeToolBoss.ErrorColumn)
+      begin
+        MessageString := CodeToolBoss.ErrorCode.FileName+': "'+CodeToolBoss.ErrorMessage+'" @ '+IntToStr(CodeToolBoss.ErrorLine)+':'+IntToStr(CodeToolBoss.ErrorColumn);
+        hasfile:=True;
+      end
       else if CodeToolBoss.ErrorMessage <> '' then
-        MessageString := '"'+CodeToolBoss.ErrorMessage+'" @ '+IntToStr(CodeToolBoss.ErrorLine)+':'+IntToStr(CodeToolBoss.ErrorColumn)
+      begin
+        MessageString := '"'+CodeToolBoss.ErrorMessage+'" @ '+IntToStr(CodeToolBoss.ErrorLine)+':'+IntToStr(CodeToolBoss.ErrorColumn);
+        hasfile:=False;
+      end
       else
         // there's no error to show so bail
         // probably PublishDiagnostic should not have been called
@@ -111,7 +118,7 @@ begin
       // Show message in the gui also
       if ServerSettings.showSyntaxErrors then
         begin
-          ShowMessage := TShowMessageNotification.Create(TMessageType.Error, '⚠️ '+MessageString);
+          ShowMessage := TShowMessageNotification.Create(TMessageType.Error, MessageString,hasfile);
           ShowMessage.Send;
           ShowMessage.Free;
         end;

@@ -390,11 +390,8 @@ end;
 { TSymbol }
 
 function TSymbol.Path: String;
-var
-  URI: TURI;
 begin
-  URI := ParseURI(location.uri);
-  Result := URI.Path + URI.Document;
+  UriToFilename(location.uri,Result);
 end;
 
 function TSymbol.IsGlobal: boolean;
@@ -1370,12 +1367,10 @@ end;
 function TDocumentSymbolRequest.DoExecute(const Params: TJSONData; AContext: TJSONRPCCallContext): TJSONData;
 var
   Input: TDocumentSymbolParams;
-  URI: TURI;
   Path: String;
 begin
   Input := specialize TLSPStreaming<TDocumentSymbolParams>.ToObject(Params);
-  URI := ParseURI(Input.textDocument.uri);
-  Path := URI.Path + URI.Document;
+  Path := UriToFilenameEx(input.textDocument.uri);
   Result := SymbolManager.FindDocumentSymbols(Path);
   if not Assigned(Result) then
     Result := TJSONNull.Create;

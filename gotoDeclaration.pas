@@ -41,15 +41,16 @@ uses
   
 function TGotoDeclaraction.Process(var Params: TTextDocumentPositionParams): TLocation;
 var
-  URI: TURI;
+  fileName: String;
   Code: TCodeBuffer;
   NewCode: TCodeBuffer;
   X, Y: Integer;
   NewX, NewY, NewTopLine, BlockTopLine, BlockBottomLine: integer;
 begin with Params do
   begin
-    URI := ParseURI(textDocument.uri);
-    Code := CodeToolBoss.FindFile(URI.Path + URI.Document);
+    UriToFilename(textDocument.uri,fileName);
+    
+    Code := CodeToolBoss.FindFile(fileName);
     X := position.character;
     Y := position.line;
 
@@ -62,7 +63,7 @@ begin with Params do
     else
       begin
         Result := nil;
-        PublishDiagnostic;
+        //PublishDiagnostic;
       end;
   end;
 end;
