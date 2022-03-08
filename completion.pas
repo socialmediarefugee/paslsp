@@ -510,7 +510,11 @@ begin with Params do
                 end;
             end;
         end else begin
-          PublishDiagnostic;
+          //identifier not found is ignore
+          if(CodeToolBoss.ErrorId<>20170421200105) then
+          begin
+            PublishDiagnostic;
+          end;          
           Result.isIncomplete := true;
         end;
     except
@@ -528,7 +532,6 @@ begin with Params do
       
     Result.items := Completions;
   end;
-
   FreeAndNil(OverloadMap);
 end;
 
