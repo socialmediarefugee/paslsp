@@ -144,9 +144,31 @@ type
     procedure Process(var Params : TCancelParams); override;
   end;
 
+
+  { TSetTrace }
+
+  TSetTraceParams = class(TPersistent)
+  private
+    fvalue: string;
+  published
+    property value: string read fvalue write fvalue;
+  end;
+
+  TSetTrace = class(specialize TLSPNotification<TSetTraceParams>)
+    procedure Process(var Params : TSetTraceParams); override;
+  end;
+
+
 implementation
 uses
   SysUtils, RegExpr,DefineTemplates,CodeToolsUtil;
+
+{ TSetTrace }
+
+procedure TSetTrace.Process(var Params: TSetTraceParams);
+begin
+
+end;
 
 { TInitializeParams }
 
@@ -555,5 +577,6 @@ initialization
   LSPHandlerManager.RegisterHandler('shutdown', TShutdown);
   LSPHandlerManager.RegisterHandler('exit', TExit);
   LSPHandlerManager.RegisterHandler('$/cancelRequest', TCancel);
+  LSPHandlerManager.RegisterHandler('$/setTrace', TSetTrace);
 end.
 
