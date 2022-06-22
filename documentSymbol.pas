@@ -1255,6 +1255,7 @@ var
   Code: TCodeBuffer;
 begin
 
+
   // get the main code in case we're dealing with includes
   Code := CodeToolBoss.FindFile(Path);
   //Code := CodeToolBoss.GetMainCode(Code);
@@ -1275,12 +1276,16 @@ begin
   }
   // the symtable entry was explicitly modified so it needs to be reloaded
   //if Entry.Modified then
-    Reload(Path, False);
+  Reload(Path, False);
 
-  if Entry <> nil then
+  if (Entry <> nil) and (Entry.RawJSON <>'') then
     Result := TJSONSerializedArray.Create(Entry.RawJSON)
   else
-    Result := nil;
+    begin
+         Result := nil;
+         PublishDiagnostic;
+    end;
+
 end;
 
 function TSymbolManager.GetEntry(Code: TCodeBuffer): TSymbolTableEntry;
@@ -1374,6 +1379,7 @@ begin
   Result := SymbolManager.FindDocumentSymbols(Path);
   if not Assigned(Result) then
     Result := TJSONNull.Create;
+
   Input.Free;
 end;
 

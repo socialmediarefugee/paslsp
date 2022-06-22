@@ -178,6 +178,8 @@ begin
   triggerCharacters.Add(')');
   triggerCharacters.Add(',');
   signatureHelpProvider.triggerCharacters := triggerCharacters;
+
+  codeActionProvider:=true;
 end;
 
 end.

@@ -1,7 +1,4 @@
 {
     "omnipascal.defaultDevelopmentEnvironment": "FreePascal",
-    "omnipascal.searchPath": "/Applications/Lazarus/components/*;/Applications/Lazarus/lcl/*",
-    "pascalLanguageServer.env.LAZARUSDIR": "/Applications/Lazarus",
-    "pascalLanguageServer.trace.server": "verbose",
-    "pascalLanguageServer.env.LazarusSrcDir": "/Applications/Lazarus"
+    "omnipascal.searchPath": "/Applications/Lazarus/components/*;/Applications/Lazarus/lcl/*"
 }

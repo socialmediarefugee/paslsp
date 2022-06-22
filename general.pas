@@ -325,13 +325,17 @@ var
   Item: TCollectionItem;
   re: TRegExpr;
   DirectoryTemplate,
-  UnitPathTemplate: TDefineTemplate;
+  UnitPathTemplate,IncPathTemplate: TDefineTemplate;
   ServerCapabilities: TServerCapabilities;
   Macros: TMacroMap;
   Paths: TStringArray;
+  cfg:TPCTargetConfigCache;
+  fpcTarget:String;
 begin with Params do
   begin
     CodeToolsOptions := TCodeToolsOptions.Create;
+    CodeToolBoss.CatchExceptions:=true;
+    //RaiseUnhandableExceptions:=True;
 
     // TODO: we need to copy this or implement ref counting
     // once we figure out how memory is going to work with
@@ -390,15 +394,20 @@ begin with Params do
     with CodeToolsOptions do
       begin
         // set some built-in defaults based on platform
+
         {$ifdef DARWIN}
         FPCPath := '/usr/local/bin/fpc';
         FPCSrcDir := '/usr/local/share/fpcsrc';
         {$endif}
 
         {$ifdef MSWINDOWS}
+        FPCPath := 'C:/lazarus/fpc/3.2.2/bin/i386-win32/fpc.exe';
+        LazarusSrcDir:='c:/lazarus';
         {$endif}
 
         {$ifdef LINUX}
+        FPCPath := '/usr/local/bin/fpc';
+        FPCSrcDir := '/usr/local/share/fpcsrc';
         {$endif}
 
         InitWithEnvironmentVariables;
@@ -439,12 +448,19 @@ begin with Params do
                   SymbolManager.Scan(Path, false);
               end;
           end;
-
         for Option in initializationOptions.FPCOptions do
           begin
             // expand file names in switches with paths
             if re.Exec(Option) then
               FPCOptions := FPCOptions + '-' + re.Match[2] + ExpandFileName(re.Match[3]) + ' '
+            else if option.StartsWith('-T') then
+            begin
+               CodeToolsOptions.TargetOS:=option.SubString(2);
+            end
+             else if option.StartsWith('-P') then
+            begin
+               CodeToolsOptions.TargetProcessor:=option.SubString(2);
+            end
             else
               FPCOptions := FPCOptions + Option + ' ';
           end;
@@ -465,12 +481,37 @@ begin with Params do
       end;
     re.Free;
 
+
     with CodeToolBoss do
       begin
         Init(CodeToolsOptions);
         IdentifierList.SortForHistory := True;
         IdentifierList.SortForScope := True;
         //CatchExceptions:=True;
+      end;
+
+    if DirectoryExists(CodeToolsOptions.LazarusSrcDir) then
+      begin
+           fpcTarget:=CodeToolsOptions.TargetOS+'-'+CodeToolsOptions.TargetProcessor;
+        //CodeToolBoss.DefinePool.CreateLCLProjectTemplate();
+        UnitPathTemplate:=TDefineTemplate.Create('UnitPath', 'Unit Path',
+          UnitPathMacroName,
+          UnitPathMacro+';'+ CodeToolsOptions.LazarusSrcDir+'/lcl/units/'+fpcTarget+';'+
+          {$IFDEF MSWINDOWS}
+          CodeToolsOptions.LazarusSrcDir+'/lcl/units/'+fpcTarget+'/win32;'+
+          {$ENDIF}
+          CodeToolsOptions.LazarusSrcDir+'/components/lazutils/lib/'+fpcTarget+
+          CodeToolsOptions.LazarusSrcDir+'/packager/units/'+fpcTarget,
+          da_Define);
+        IncPathTemplate:=TDefineTemplate.Create('IncPath','Inc Path',
+         IncludePathMacroName,
+         IncludePathMacro+';'+ CodeToolsOptions.LazarusSrcDir+'/lcl/include',
+         da_Define);
+
+
+        CodeToolBoss.DefineTree.Add(UnitPathTemplate);
+        CodeToolBoss.DefineTree.Add(IncPathTemplate);
+
       end;
 
     Result := TInitializeResult.Create;

@@ -91,8 +91,8 @@ begin with Params do
     except
       on E: Exception do
         begin
-          writeln(StdErr, 'Hover Error: ', E.ClassName, ' ', E.Message);
-          flush(StdErr);
+          //writeln(StdErr, 'Hover Error: ', E.ClassName, ' ', E.Message);
+          //flush(StdErr);
           exit(nil);
         end;
     end;

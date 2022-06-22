@@ -5,7 +5,7 @@ unit CodeToolsUtil;
 interface
 
 uses
-  Classes, SysUtils, FileProcs, LazUtils,LCLProc,
+  Classes, SysUtils, FileProcs, LazUtils, LazUtilities,
   // Codetools
   Laz_AVL_Tree, ExprEval,DefineTemplates,CodeToolManager,CodeCache,LinkScanner,sourcelog,
   BasicCodeTools,
@@ -45,6 +45,7 @@ type
     procedure AddCustomMacro;
     procedure WriteDefinesDebugReport;
     procedure WriteUnitDirectives(Code: TCodeBuffer);
+    procedure WriteUnitInfo(code:TCodeBuffer);
 
     procedure CheckInactiveRegion(Code:TCodeBuffer;uri:String);
   published
@@ -58,13 +59,13 @@ implementation
 
 function CompareNodeValues(Data1, Data2: Pointer): Integer;
 begin
-  Result:=ComparePointers(TCodeToolsDefinesNodeValues(Data1).Node,
+  Result:=LazUtilities. ComparePointers(TCodeToolsDefinesNodeValues(Data1).Node,
                           TCodeToolsDefinesNodeValues(Data2).Node);
 end;
 
 function CompareNodeAndNodeValues(Node, NodeValues: Pointer): Integer;
 begin
-  Result:=ComparePointers(TCodeToolsDefinesNodeValues(Node),
+  Result:=LazUtilities.ComparePointers(TCodeToolsDefinesNodeValues(Node),
                           TCodeToolsDefinesNodeValues(NodeValues).Node);
 end;
 
@@ -237,6 +238,22 @@ begin
 
   DebugLn('-----------------------------------------------');
 end;
+
+procedure TCodeToolsUtil.WriteUnitInfo(code: TCodeBuffer);
+begin
+
+   DebugLn('show unit info');
+   DebugLn('UnitPath:');
+   DebugLn(CodeToolBoss. GetUnitPathForDirectory(code.Filename));
+
+   DebugLn('IncPath:');
+   DebugLn(CodeToolBoss. GetIncludePathForDirectory(code.Filename));
+
+   DebugLn('SrcPath:');
+   DebugLn(CodeToolBoss. GetCompleteSrcPathForDirectory(code.Filename));
+
+end;
+
 procedure TCodeToolsUtil.CheckInactiveRegion(Code:TCodeBuffer;uri:String);
 var   
   notify:TInactiveRegionsNotification;
@@ -253,7 +270,7 @@ var
 begin
   if Code=nil then
     exit;
-  
+  input:=nil;
   // parse the unit
   if not CodeToolBoss.ExploreUnitDirectives(Code,Scanner) then
      exit;
@@ -290,7 +307,7 @@ begin
         end;
       end;
     end;
-    if input.endline=0 then
+    if assigned(input) and  (input.endline=0) then
     begin
       input.endline:=999999;
     end;

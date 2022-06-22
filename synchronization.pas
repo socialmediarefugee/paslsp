@@ -178,6 +178,10 @@ begin with Params do
     CheckSyntax(Code);
     CodeUtilBoss.CheckInactiveRegion(Code,textDocument.uri);
 
+    {$IFDEF DEBUG}
+    CodeUtilBoss.WriteDefinesDebugReport;
+    CodeUtilBoss.WriteUnitInfo(code);
+    {$ENDIF}
     //CodeToolBoss.ExploreDirectives(code,DirectivesTool);
     //DirectivesTool.WriteDebugReport;
     //if SymbolManager <> nil then

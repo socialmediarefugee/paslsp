@@ -11,10 +11,15 @@
 				"clear": true,
 				"revealProblems": "onProblem"
 			},
+			"windows": {
+				"customOptions": [
+					"-TLinux"
+				]
+			},
 			"buildOption": {
 				"unitOutputDir": "./out",
 				"targetCPU": "x86_64",
-				"targetOS": "Darwin",
+				"targetOS": "win64",
 				"outputFile": "",
 				"customOptions": [
 					//"-dSYMBOL_DEBUG",

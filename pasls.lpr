@@ -31,7 +31,7 @@ uses
   { Protocols }
   basic, synchronization, completion, gotoDeclaration, gotoDefinition, 
   gotoImplementation, hover, signatureHelp, references, codeAction, 
-  documentHighlight, documentSymbol, workspace, window,
+  documentHighlight, documentSymbol, workspace, window, diagnostics, settings,
 
   {Other}
    LazLoggerBase;
@@ -128,7 +128,12 @@ begin
     end;
     
     Request := TJSONParser.Create(Content, DefaultOptions).Parse;
-    
+
+    if TJSONObject(request).Find('params')=nil then
+    begin
+        TJSONObject(request).Add('params',TJSONObject.Create);
+    end;
+
     // log request payload
     if VerboseDebugging then
       begin

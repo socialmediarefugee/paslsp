@@ -99,12 +99,12 @@ begin
     begin
       if CodeToolBoss.ErrorCode <> nil then
       begin
-        MessageString := CodeToolBoss.ErrorCode.FileName+': "'+CodeToolBoss.ErrorMessage+'" @ '+IntToStr(CodeToolBoss.ErrorLine)+':'+IntToStr(CodeToolBoss.ErrorColumn);
+        MessageString := CodeToolBoss.ErrorCode.FileName+' "'+CodeToolBoss.ErrorMessage+'" @ '+IntToStr(CodeToolBoss.ErrorLine-1)+':'+IntToStr(CodeToolBoss.ErrorColumn-1);
         hasfile:=True;
       end
       else if CodeToolBoss.ErrorMessage <> '' then
       begin
-        MessageString := '"'+CodeToolBoss.ErrorMessage+'" @ '+IntToStr(CodeToolBoss.ErrorLine)+':'+IntToStr(CodeToolBoss.ErrorColumn);
+        MessageString := '"'+CodeToolBoss.ErrorMessage+'" @ '+IntToStr(CodeToolBoss.ErrorLine-1)+':'+IntToStr(CodeToolBoss.ErrorColumn-1);
         hasfile:=False;
       end
       else
