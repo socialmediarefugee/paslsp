@@ -398,6 +398,20 @@ type
 
   TDiagnosticItems = specialize TGenericCollection<TDiagnostic>;
 
+  { TCommandKind}
+  TCommandKind = record
+  public const
+
+    // Empty kind.
+    Empty = '';
+
+    // CompleteCode.
+    CompleteCode = 'CompleteCode';
+
+  private
+    value: string;
+  end;
+
   { TCommand }
 
   TCommand = class(TPersistent)

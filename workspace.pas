@@ -103,16 +103,104 @@ type
     procedure Process(var Params: TDidChangeConfigurationParams); override;
   end;
 
+  { TExecuteCommandParams }
+
+  TExecuteCommandParams  = class(TPersistent)
+  private
+    fCommand: string;
+    fArguments: TStrings;
+  published
+    // The identifier of the actual command handler.
+    property command: string read fCommand write fCommand;
+    // Arguments that the command handler should be  invoked with.
+    property arguments: TStrings read fArguments write fArguments;
+  public
+    procedure AfterConstruction; override;
+  end;
+
+
+  TExecuteCommand = class(specialize TLSPRequest<TExecuteCommandParams, TPersistent>)
+
+     function Process(var Params : TExecuteCommandParams): TPersistent; override;
+  private
+     procedure DoCommandComplateCode(params:TExecuteCommandParams);
+  end;
+
 implementation
 uses
-  SysUtils, DateUtils;
+  SysUtils, DateUtils,CodeToolManager,URIParser,CodeCache,SetSelection,window;
+
+{ TExecuteCommand }
+
+function TExecuteCommand.Process(var Params: TExecuteCommandParams): TPersistent;
+begin
+  if Params.command=TCommandKind.CompleteCode then
+     self.DoCommandComplateCode(Params);
+  Result:=nil;
+end;
+
+procedure TExecuteCommand.DoCommandComplateCode(params: TExecuteCommandParams);
+var uri:String;
+  fileName:String;
+  x,y,TopLine:Integer;
+  code,newCode:TCodeBuffer;
+  newx,newy,newTopLine,BlockTopLine, BlockBottomLine:Integer;
+  Notify:TShowMessageNotification;
+  pos:TPosition;
+begin
+  uri:=params.arguments.Strings[0];
+  y:=StrToInt(params.arguments.Strings[1]);
+  x:=StrToInt(params.arguments.Strings[2]);
+  URIToFilename(uri,fileName);
+  Code := CodeToolBoss.FindFile(fileName);
+  if Code=nil then
+  Code:=CodeToolBoss.LoadFile(fileName,true,false);
+
+  if Code=nil then exit;
+
+  code.Clear;
+  if not code.Reload then exit;
+
+  TopLine:=0;
+  if CodeToolBoss.CompleteCode(code,x+1,y+1,TopLine,newCode,newx,newy,newTopLine,BlockTopLine,BlockBottomLine,True) then
+  begin
+    if Assigned(newCode) then
+    begin
+      newCode.Save;
+      Notify:=TShowMessageNotification.Create(TMessageType.Info,'Complete codes succeed!',true);
+      notify.Send;
+      notify.Free;
+      //document not loaded now ,so it's not   correct
+      //pos:=TPosition.Create;
+      //pos.line:=newy+1;
+      //pos.character:=newx+1;
+      //Notify:=TSetSelectionNotification.Create(uri,pos,pos);
+      //Notify.Send;
+      //Notify.Free;
+      //pos.Free;
+
+    end;
+
+  end;
+end;
 
 { TDidChangeConfiguration }
 
-procedure TDidChangeConfiguration.Process(var Params: TDidChangeConfigurationParams);
+procedure TDidChangeConfiguration.Process(
+  var Params: TDidChangeConfigurationParams);
 begin
-  // todo: this messages comes AFTER the initializationOptions
+
 end;
+
+
+{ TExecuteCommandParams }
+
+procedure TExecuteCommandParams.AfterConstruction;
+begin
+  arguments := TStringList.Create;
+end;
+
+
 
 { TDidChangeWorkspaceFolders }
 
@@ -146,4 +234,5 @@ initialization
   LSPHandlerManager.RegisterHandler('workspace/didChangeConfiguration', TDidChangeConfiguration);
   LSPHandlerManager.RegisterHandler('workspace/didChangeWorkspaceFolders', TDidChangeWorkspaceFolders);
   LSPHandlerManager.RegisterHandler('workspace/symbol', TWorkspaceSymbolRequest);
+  LSPHandlerManager.RegisterHandler('workspace/executeCommand', TExecuteCommand);
 end.

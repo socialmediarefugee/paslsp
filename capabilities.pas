@@ -28,6 +28,8 @@ uses
 
 type
 
+
+
   { TWorkspaceClientCapabilities }
 
   TWorkspaceClientCapabilities = class(TPersistent)
@@ -106,11 +108,15 @@ type
     fDeclarationProvider: boolean;
     fReferencesProvider: boolean;
     fImplementationProvider: boolean;
-    fCodeActionProvider: boolean;
+    fCodeActionProvider: TCodeActionOptions;
     fDocumentHighlightProvider: boolean;
     fDocumentSymbolProvider: boolean;
     fWorkspaceSymbolProvider: boolean;
     fSignatureHelpProvider: TSignatureHelpOptions;
+
+    //The server provides execute command support.
+    fexecuteCommandProvider: TExecuteCommandOptions;
+
   public
     constructor Create(settings: TServerSettings);
   published
@@ -122,14 +128,16 @@ type
     property declarationProvider: boolean read fDeclarationProvider write fDeclarationProvider;
     property referencesProvider: boolean read fReferencesProvider write fReferencesProvider;
     property implementationProvider: boolean read fImplementationProvider write fImplementationProvider;
-    property codeActionProvider: boolean read fCodeActionProvider write fCodeActionProvider;
+    property codeActionProvider: TCodeActionOptions read fCodeActionProvider write fCodeActionProvider;
     property documentHighlightProvider: boolean read fDocumentHighlightProvider write fDocumentHighlightProvider;
     property documentSymbolProvider: boolean read fDocumentSymbolProvider write fDocumentSymbolProvider;
     property workspaceSymbolProvider: boolean read fWorkspaceSymbolProvider write fWorkspaceSymbolProvider;
     property signatureHelpProvider: TSignatureHelpOptions read fSignatureHelpProvider write fSignatureHelpProvider;
+    property executeCommandProvider: TExecuteCommandOptions read fexecuteCommandProvider write fexecuteCommandProvider;
   end;
 
 implementation
+uses codeAction;
 
 { TWorkspaceServerCapabilities }
 
@@ -179,7 +187,13 @@ begin
   triggerCharacters.Add(',');
   signatureHelpProvider.triggerCharacters := triggerCharacters;
 
-  codeActionProvider:=true;
+  codeActionProvider:=TCodeActionOptions.Create;
+  codeActionProvider.codeActionKinds.Add(TCodeActionKind.Refactor);
+  codeActionProvider.resolveProvider:=false;
+
+  executeCommandProvider:=TExecuteCommandOptions.Create;
+  executeCommandProvider.commands:=TStringList.Create;
+  executeCommandProvider.commands.Add('CompleteCode');
 end;
 
 end.

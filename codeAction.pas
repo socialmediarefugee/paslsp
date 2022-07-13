@@ -25,7 +25,7 @@ unit codeAction;
 interface
 
 uses
-  Classes, URIParser, 
+  Classes,SysUtils, URIParser, 
   lsp, basic;
 
 type
@@ -93,6 +93,22 @@ type
     value: string;
   end;
 
+   TCodeActionTriggerKind=record
+   public   const
+     //Code actions were explicitly requested by the user or by an extension.
+     Invoked = 1;
+
+     //Code actions were requested automatically.
+     //
+     //	This typically happens when current selection in a file changes, but can
+     //	also be triggered when file content changes.
+
+     Automatic =2;
+
+   private
+     value:Integer;
+   end;
+
   { TCodeAction }
 
   TCodeAction = class(TCollectionItem)
@@ -138,6 +154,7 @@ type
   private
     fDiagnostics: TDiagnosticItems;
     fOnly: TStrings;
+    ftriggerKind:TCodeActionTriggerKind;
   published
     // An array of diagnostics known on the client side overlapping the range provided to the
     // `textDocument/codeAction` request. They are provided so that the server knows which
@@ -150,6 +167,12 @@ type
     // Actions not of this kind are filtered out by the client before being shown. So servers
     // can omit computing them.
     property only: TStrings read fOnly write fOnly;
+
+    //The reason why code actions were requested.
+    //@since 3.17.0
+    property  triggerKind:Integer read ftriggerKind.value write ftriggerKind.value;
+  public
+     procedure AfterConstruction; override;
   end;
 
   { TCodeActionParams }
@@ -174,12 +197,61 @@ type
     function Process(var Params: TCodeActionParams): TCodeActionItems; override;
   end;
 
+  { TCodeActionRequestEx }
+
+  TCodeActionRequestEx = class(specialize TLSPRequest<TCodeActionParams, TCommand>)
+    function Process(var Params: TCodeActionParams): TCommand; override;
+  end;
+
 implementation
+uses CodeToolManager;
+
+{ TCodeActionContext }
+
+procedure TCodeActionContext.AfterConstruction;
+begin
+  inherited AfterConstruction;
+  Self.fOnly:=TStringList.Create;
+  self.diagnostics:=TDiagnosticItems.Create;
+end;
+
+{ TCodeActionRequestEx }
+
+function TCodeActionRequestEx.Process(var Params: TCodeActionParams): TCommand;
+begin
+  result:=TCommand.Create;
+  result.title:='';
+  result.command:='save';
+end;
 
 function TCodeActionRequest.Process(var Params: TCodeActionParams): TCodeActionItems;
+var codeAction:TCodeAction;
 begin with Params do
   begin
-    Result := nil;
+
+    if context.triggerKind=TCodeActionTriggerKind.Invoked then
+    begin
+      Result := TCodeActionItems.Create;
+      codeAction:=(Result.Add  as TCodeAction);
+      codeAction.title:='Complete Codes Here';
+      codeAction.kind:=TCodeActionKind.Refactor;
+      codeAction.isPreferred:=false;
+      codeAction.command:=TCommand.Create;
+      codeAction.command.title:='CompleteCode';
+      codeAction.command.command:=TCommandKind.CompleteCode;
+      codeAction.command.arguments.Add(params.textDocument.uri);
+
+      codeAction.command.arguments.add(inttostr( range.start.line));
+      codeAction.command.arguments.add(inttostr( range.start.character));
+
+      codeAction.command.arguments.add(inttostr( range.&end.line));
+      codeAction.command.arguments.add(inttostr( range.&end.character));
+
+    end
+    else
+    begin
+      Result:=nil;
+    end;
   end;
 end;
 

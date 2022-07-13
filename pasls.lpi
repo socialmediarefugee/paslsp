@@ -16,9 +16,12 @@
     </General>
     <BuildModes Count="4">
       <Item1 Name="Debug" Default="True"/>
-      <Item2 Name="Release">
+      <Item2 Name="Release-mac-x64">
         <CompilerOptions>
           <Version Value="11"/>
+          <Target>
+            <Filename Value="../fpctoolkit/bin/x86_64-darwin/pasls"/>
+          </Target>
           <SearchPaths>
             <IncludeFiles Value="$(ProjOutDir)"/>
             <UnitOutputDirectory Value="lib/$(TargetCPU)-$(TargetOS)"/>
@@ -34,6 +37,7 @@
           <Linking>
             <Debugging>
               <GenerateDebugInfo Value="False"/>
+              <StripSymbols Value="True"/>
             </Debugging>
             <LinkSmart Value="True"/>
           </Linking>
@@ -108,7 +112,7 @@
         <PackageName Value="CodeTools"/>
       </Item1>
     </RequiredPackages>
-    <Units Count="15">
+    <Units Count="19">
       <Unit0>
         <Filename Value="pasls.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -170,6 +174,23 @@
         <Filename Value="settings.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit14>
+      <Unit15>
+        <Filename Value="workspace.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit15>
+      <Unit16>
+        <Filename Value="window.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit16>
+      <Unit17>
+        <Filename Value="inactiveRegions.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit17>
+      <Unit18>
+        <Filename Value="setselection.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="SetSelection"/>
+      </Unit18>
     </Units>
   </ProjectOptions>
   <CompilerOptions>

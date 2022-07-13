@@ -133,7 +133,40 @@ type
     property resolveProvider: Boolean read fResolveProvider write fResolveProvider;
   end;
 
+    { TCodeActionOptions }
+  TCodeActionOptions=class(TPersistent)
+  private
+    fCodeActionKinds:TStrings;
+    fResolveProvider:Boolean;
+  public
+    constructor Create;
+    destructor Destroy; override;
+  published
+    property  codeActionKinds:TStrings read fCodeActionKinds write fCodeActionKinds;
+    property  resolveProvider:Boolean read fResolveProvider write fResolveProvider;
+  end;
+
+ TExecuteCommandOptions=class(TPersistent)
+ private
+   fcommands:TStrings;
+ published
+   property commands:TStrings read fcommands write fcommands;
+ end;
+
 implementation
+
+{ TCodeActionOptions }
+
+constructor TCodeActionOptions.Create;
+begin
+  fCodeActionKinds:=TStringList.Create;
+end;
+
+destructor TCodeActionOptions.Destroy;
+begin
+  fCodeActionKinds.Free;
+  inherited Destroy;
+end;
 
 { TSaveOptions }
 
