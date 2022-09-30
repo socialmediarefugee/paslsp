@@ -123,8 +123,11 @@ type
 
      function Process(var Params : TExecuteCommandParams): TPersistent; override;
   private
-     procedure DoCommandComplateCode(params:TExecuteCommandParams);
+     function DoCommandComplateCode(params:TExecuteCommandParams):TExecuteCommandParams;
+     function GetUnitPath(params:TExecuteCommandParams):TExecuteCommandParams;
+
   end;
+
 
 implementation
 uses
@@ -134,20 +137,27 @@ uses
 
 function TExecuteCommand.Process(var Params: TExecuteCommandParams): TPersistent;
 begin
-  if Params.command=TCommandKind.CompleteCode then
-     self.DoCommandComplateCode(Params);
   Result:=nil;
+  if Params.command=TCommandKind.CompleteCode then
+    result:= self.DoCommandComplateCode(Params)
+  else if Params.command=TCommandKind.GetUnitPath then
+    result:= self.GetUnitPath(params);
+
 end;
 
-procedure TExecuteCommand.DoCommandComplateCode(params: TExecuteCommandParams);
+function TExecuteCommand.DoCommandComplateCode(params: TExecuteCommandParams):TExecuteCommandParams;
 var uri:String;
   fileName:String;
   x,y,TopLine:Integer;
   code,newCode:TCodeBuffer;
   newx,newy,newTopLine,BlockTopLine, BlockBottomLine:Integer;
-  Notify:TShowMessageNotification;
+  Notify:TSetSelectionNotification;
   pos:TPosition;
 begin
+  result:=TExecuteCommandParams.Create;
+  result.command:=params.command;
+
+  result.arguments.Add('false');
   uri:=params.arguments.Strings[0];
   y:=StrToInt(params.arguments.Strings[1]);
   x:=StrToInt(params.arguments.Strings[2]);
@@ -155,25 +165,35 @@ begin
   Code := CodeToolBoss.FindFile(fileName);
   if Code=nil then
   Code:=CodeToolBoss.LoadFile(fileName,true,false);
-
   if Code=nil then exit;
 
-  code.Clear;
-  if not code.Reload then exit;
+  code.Revert;
+  //code.LoadFromFile(fileName);
+  //code.Clear;
+  //if not code.Reload then exit;
 
   TopLine:=0;
+
   if CodeToolBoss.CompleteCode(code,x+1,y+1,TopLine,newCode,newx,newy,newTopLine,BlockTopLine,BlockBottomLine,True) then
   begin
     if Assigned(newCode) then
     begin
       newCode.Save;
-      Notify:=TShowMessageNotification.Create(TMessageType.Info,'Complete codes succeed!',true);
-      notify.Send;
-      notify.Free;
+      CodeToolBoss.SourceCache.ClearAllSourceLogEntries;
+      result.arguments[0]:='true';
+      result.arguments.Add(inttostr(newy+1));
+      result.arguments.add(inttostr(newx+1));
+      result.arguments.add(inttostr(newTopLine+1));
+      result.arguments.add(inttostr(BlockTopLine+1));
+      result.arguments.add(inttostr(BlockBottomLine+1));
+
+      //Notify:=TShowMessageNotification.Create(TMessageType.Info,'Complete codes succeed!',true);
+      //notify.Send;
+      //notify.Free;
       //document not loaded now ,so it's not   correct
-      //pos:=TPosition.Create;
-      //pos.line:=newy+1;
-      //pos.character:=newx+1;
+      // pos:=TPosition.Create(newTopLine+1,newx+1);
+      ////pos.line:=newy+1;
+      ////pos.character:=newx+1;
       //Notify:=TSetSelectionNotification.Create(uri,pos,pos);
       //Notify.Send;
       //Notify.Free;
@@ -181,7 +201,23 @@ begin
 
     end;
 
+
   end;
+end;
+
+function TExecuteCommand.GetUnitPath(params: TExecuteCommandParams):TExecuteCommandParams;
+var
+  uname:string;
+  i:integer;
+begin
+  result:=TExecuteCommandParams.Create;
+  result.command:=params.command;
+  for i:=0 to params.Arguments.Count-1 do
+  begin
+    uname:=params.arguments.Strings[0];
+    result.arguments.Add(CodeToolBoss.FindUnitInUnitSet('',uname));
+  end;
+
 end;
 
 { TDidChangeConfiguration }

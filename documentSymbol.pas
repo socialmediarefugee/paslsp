@@ -199,7 +199,8 @@ type
     destructor Destroy; override;
     procedure Clear;
     procedure SerializeSymbols;
-    function AddSymbol(Name: String; Kind: TSymbolKind; FileName: String; Line, Column, RangeLen: Integer): TSymbol;
+    procedure SerialzeToDocSymbols;
+    function AddSymbol(Name: String; Kind: TSymbolKind; FileName: String; Line, Column, endLine,endCol: Integer): TSymbol;
     function RequestReload: boolean;
     function Count: integer; inline;
     property RawJSON: String read GetRawJSON;
@@ -221,7 +222,7 @@ type
     function AddSymbol(Node: TCodeTreeNode; Kind: TSymbolKind): TSymbol; overload;
     function AddSymbol(Node: TCodeTreeNode; Kind: TSymbolKind; Name: String; Container: String = ''): TSymbol; overload;
     procedure ExtractCodeSection(Node: TCodeTreeNode);
-    procedure ExtractProcedure(ParentNode, Node: TCodeTreeNode);
+    function ExtractProcedure(ParentNode, Node: TCodeTreeNode):TSymbol;
     procedure ExtractTypeDefinition(TypeDefNode, Node: TCodeTreeNode); 
     procedure ExtractObjCClassMethods(ClassNode, Node: TCodeTreeNode);
   public
@@ -462,14 +463,14 @@ begin
     Result := true;
 end;
 
-function TSymbolTableEntry.AddSymbol(Name: String; Kind: TSymbolKind; FileName: String; Line, Column, RangeLen: Integer): TSymbol;
+function TSymbolTableEntry.AddSymbol(Name: String; Kind: TSymbolKind; FileName: String; Line, Column, endline,endCol: Integer): TSymbol;
 var
   Symbol: TSymbol;
 begin
   Symbol := TSymbol(Symbols.Add);
   Symbol.name := Name;
   Symbol.kind := Kind;
-  Symbol.location := TLocation.Create(FileName, Line - 1, Column - 1, RangeLen);
+  Symbol.location := TLocation.Create(FileName, Line - 1, Column - 1, EndLine-1,EndCol-1);
 
   result := Symbol;
 end;
@@ -514,6 +515,77 @@ begin
 
   SerializedItems.Free;
   Symbols.Clear;
+end;
+
+procedure TSymbolTableEntry.SerialzeToDocSymbols;
+const
+  BATCH_COUNT = 1000;
+var
+  SerializedItems: TJSONArray;
+  i, Start, Next, Total,idx: Integer;
+  Symbol: TSymbol;
+  DocSymbols:TDocumentSymbolItems;
+  DocSymbol:TDocumentSymbol;
+  dict:TStringList;
+begin
+  dict:=TStringList.Create;
+  dict.Sorted:=true;
+  DocSymbols:=TDocumentSymbolItems.Create;
+  try
+    for i:=0 to Symbols.Count-1 do
+    begin
+      Symbol:=TSymbol(Symbols.Items[i]);
+      if Symbol.containerName <> '' then
+        begin
+
+          if dict.Find(symbol.containerName,idx) then
+          begin
+            DocSymbol:=TDocumentSymbol(dict.Objects[idx]);
+            if DocSymbol.range.&end.line<symbol.location.range.&end.line then
+                DocSymbol.range.&end:=symbol.location.range.&end;
+            if DocSymbol.range.start.line>symbol.location.range.start.line then
+                DocSymbol.range.start:=symbol.location.range.start;
+            if not Assigned(DocSymbol.children) then
+            begin
+              DocSymbol.children:=TDocumentSymbolItems.Create;
+              DocSymbol.range:=symbol.location.range;
+            end;
+
+            DocSymbol.selectionRange:=DocSymbol.range;
+            DocSymbol:=TDocumentSymbol(DocSymbol.children.Add);
+
+          end
+          else
+          begin
+            DocSymbol:=TDocumentSymbol(DocSymbols.Add);
+          end;
+        end
+        else
+        begin
+          DocSymbol:=TDocumentSymbol(DocSymbols.Add);
+          dict.AddObject(symbol.name,DocSymbol);
+        end;
+
+      DocSymbol.name:=Symbol.name;//.Substring(length(symbol.containerName)+1);
+      DocSymbol.kind:=Symbol.kind;
+
+      DocSymbol.range:=Symbol.location.range;
+      DocSymbol.selectionRange:=DocSymbol.range;
+    end;
+    SerializedItems := specialize TLSPStreaming<TDocumentSymbolItems>.ToJSON(DocSymbols) as TJSONArray;
+    fRawJSON := SerializedItems.AsJSON;
+
+    SerializedItems.Free;
+    Symbols.Clear;
+  finally
+
+    DocSymbols.Free;
+    dict.Free;
+
+  end;
+
+
+
 end;
 
 procedure TSymbolTableEntry.Clear;
@@ -571,7 +643,7 @@ end;
 
 function TSymbolExtractor.AddSymbol(Node: TCodeTreeNode; Kind: TSymbolKind; Name: String; Container: String): TSymbol;
 var
-  CodePos: TCodeXYPosition;
+  CodePos,endPos: TCodeXYPosition;
   FileName: String;
 begin
   {$ifdef SYMBOL_DEBUG}
@@ -579,6 +651,8 @@ begin
   {$endif}
 
   Tool.CleanPosToCaret(Node.StartPos, CodePos);
+  Tool.CleanPosToCaret(Node.EndPos, endPos);
+
   
   // clear existing symbols in symbol database
   // we don't know which include files are associated
@@ -596,7 +670,7 @@ begin
     end;
   {$ENDIF}
     
-  Result := Entry.AddSymbol(Name, Kind, CodePos.Code.FileName, CodePos.Y, CodePos.X, Node.EndPos - Node.StartPos);
+  Result := Entry.AddSymbol(Name, Kind, CodePos.Code.FileName, CodePos.Y, CodePos.X, endpos.Y,endPos.X);
 end;
 
 procedure TSymbolExtractor.ExtractObjCClassMethods(ClassNode, Node: TCodeTreeNode);
@@ -703,21 +777,24 @@ begin
     end;
 end;
 
-procedure TSymbolExtractor.ExtractProcedure(ParentNode, Node: TCodeTreeNode);
+function TSymbolExtractor.ExtractProcedure(ParentNode, Node: TCodeTreeNode):TSymbol;
 var
   Child: TCodeTreeNode;
-  Name, OrigName: ShortString;
+  Name, containerName,key: ShortString;
   Symbol: TSymbol;
 begin
+  result:=Nil;;
   PrintNodeDebug(Node);
-    
-  if ParentNode <> nil then
-    Name := Tool.ExtractProcName(ParentNode, [])+'.'+Tool.ExtractProcName(Node, [])
-  else
-    Name := Tool.ExtractProcName(Node, []);
 
-  OrigName := Name;
-  Symbol := TSymbol(OverloadMap.Find(Name));
+  //if ParentNode <> nil then
+  //  Name := Tool.ExtractProcName(ParentNode, [])+'.'+Tool.ExtractProcName(Node, [])
+  containerName:=Tool.ExtractClassNameOfProcNode(Node);
+  //if ParentNode <> nil then
+  //  containerName:=Tool.ExtractClassName(ParentNode,False,true,false);
+  Name := Tool.ExtractProcName(Node, [phpWithoutClassName]);
+
+  key:=containerName+'.'+Name;
+  Symbol := TSymbol(OverloadMap.Find(key));
   if Symbol <> nil then
     begin
       // TODO: when newest LSP version is released on package control
@@ -740,7 +817,8 @@ begin
     end;
 
   Symbol := AddSymbol(Node, SymbolKindFunction, Name);
-  OverloadMap.Add(Symbol.name, Symbol);
+  Symbol.containerName:=containerName;
+  OverloadMap.Add(key, Symbol);
 
   // recurse into procedures to find nested procedures
 
@@ -759,15 +837,20 @@ begin
           Child := Child.NextBrother;
         end;
     end;
+  result:=Symbol;
 end;
 
 procedure TSymbolExtractor.ExtractCodeSection(Node: TCodeTreeNode); 
 var
-  Symbol: TSymbol = nil;
+  Symbol,lastClassSymbol: TSymbol;
   Child: TCodeTreeNode;
   Scanner: TLinkScanner;
   LinkIndex: Integer;
+  isImplementation:Boolean;
+
 begin
+  isImplementation:=(node.Parent<>nil) and  (node.Parent.Desc=ctnImplementation);
+  lastClassSymbol:=nil;
   while Node <> nil do
     begin
       PrintNodeDebug(Node);
@@ -786,13 +869,13 @@ begin
         end;
 
       // recurse into code sections
-      if (Node.Desc in AllCodeSections) and (Node.ChildCount > 0) then
+        if (Node.Desc in AllCodeSections) and (Node.ChildCount > 0) then
         begin
           case Node.Desc of
             ctnInterface:
               AddSymbol(Node, SymbolKindNamespace, kSymbolName_Interface);
-            ctnImplementation:
-              AddSymbol(Node, SymbolKindNamespace, kSymbolName_Implementation);
+            //ctnImplementation:
+            //  AddSymbol(Node, SymbolKindNamespace, kSymbolName_Implementation);
           end;
           CodeSection := Node.Desc;
           Inc(IndentLevel);
@@ -838,10 +921,28 @@ begin
           end;
 
         ctnProcedure:
-          ExtractProcedure(nil, Node);
+          begin
+
+            Symbol:= ExtractProcedure(nil, Node);
+
+            if (symbol<>nil) and  (symbol.containerName<>'') then
+              begin
+                 if (lastClassSymbol=nil) or  (symbol.containerName<>lastClassSymbol.name) then
+                 begin
+                     lastClassSymbol:=AddSymbol(node,SymbolKindClass,symbol.containerName);
+                 end
+                 else
+                 begin
+                    lastClassSymbol.location.range.&end:=Symbol.location.range.&end;
+                 end;
+              end;
+
+          end;
       end;
 
       Node := Node.NextBrother;
+
+
     end;
 end;
 
@@ -1339,6 +1440,7 @@ begin
   Extractor.Free;
 
   Entry.SerializeSymbols;
+  //Entry.SerialzeToDocSymbols;
 
   writeln(StdErr, 'Reloaded ', Code.FileName, ' in ', MilliSecondsBetween(Now,StartTime),'ms');
   Flush(StdErr);

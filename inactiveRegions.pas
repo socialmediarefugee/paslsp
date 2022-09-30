@@ -33,10 +33,14 @@ type
   TInputRegion=class(TCollectionItem)
   private
     fStartline:Integer;
+    fStartCol:Integer;
     fEndline:Integer;
+    fEndCol:Integer;
   published
     property startLine: Integer read fStartline write fStartline;
+    property startCol: Integer read fStartCol write fStartCol;
     property endLine: Integer read fEndline write fEndline;
+    property endCol: Integer read fEndCol write fEndCol;
   end;
    
   TRegionsItems = specialize TGenericCollection<TInputRegion>;

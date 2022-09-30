@@ -266,6 +266,7 @@ var
   cursorPos:Integer;
   acode:Pointer;
   line,col:Integer;
+  content:string;
 
 begin
   if Code=nil then
@@ -279,11 +280,11 @@ begin
   try
     for i:=0 to Scanner.DirectiveCount-1 do begin
       Dir:=Scanner.Directives[i];
-    
+      content:=ExtractCommentContent(Scanner.CleanedSrc,Dir^.CleanPos,Scanner.NestedComments);
       DebugLn([i,'/',Scanner.DirectiveCount,
         ' CleanPos=',Dir^.CleanPos,'=',Scanner.CleanedPosToStr(Dir^.CleanPos),
         ' Level=',Dir^.Level,' ',dbgs(Dir^.State),
-        ' "',ExtractCommentContent(Scanner.CleanedSrc,Dir^.CleanPos,Scanner.NestedComments),'"']
+        ' "',content,'"']
         );
       if Dir^.State=lsdsInactive then
       begin
@@ -293,6 +294,7 @@ begin
           Scanner.CleanedPosToCursor(Dir^.CleanPos,cursorPos,acode);
           TSourceLog(acode).AbsoluteToLineCol(cursorPos,line,col);
           input.startline:=line;
+          input.startCol:=col+length(content)+2;
           isAdd:=True;
         end;
       end
@@ -302,7 +304,8 @@ begin
         begin
           Scanner.CleanedPosToCursor(Dir^.CleanPos,cursorPos,acode);
           TSourceLog(acode).AbsoluteToLineCol(cursorPos,line,col);
-          input.endline:=line-1;
+          input.endline:=line;
+          input.endCol:=col;
           isAdd:=False;  
         end;
       end;

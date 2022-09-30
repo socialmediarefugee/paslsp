@@ -538,6 +538,9 @@ begin with Params do
 
     Result := TInitializeResult.Create;
     Result.capabilities := ServerCapabilities;
+
+
+
   end;
 end;
 

@@ -4,14 +4,34 @@
     // 欲了解更多信息，请访问: https://go.microsoft.com/fwlink/?linkid=830387
     "version": "0.2.0",
     "configurations": [
-        
+        {
+            "name": "(gdb) cpp附加",
+            "type": "cppdbg",
+            "request": "attach",
+            "program": "${workspaceRoot}/../fpctoolkit/bin/win32/pasls.exe",
+            "MIMode": "gdb",
+            "miDebuggerPath": "C:/lazarus/mingw/i386-win32/bin/gdb.exe",
+            "setupCommands": [
+                {
+                    "description": "为 gdb 启用整齐打印",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                },
+                {
+                    "description":  "将反汇编风格设置为 Intel",
+                    "text": "-gdb-set disassembly-flavor intel",
+                    "ignoreFailures": true
+                }
+            ]
+        },
+
 
 
         {
             "type": "by-gdb",
             "request": "attach",
             "name": "Attach(gdb)",
-            "program": "cat req.txt | ${workspaceRoot}/lib/x86_64-darwin/pasls",
+            "program": "${workspaceRoot}/lib/x86_64-darwin/pasls",
             "cwd": "${workspaceRoot}",
             "processId":  5683
         },

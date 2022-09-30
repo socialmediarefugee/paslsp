@@ -49,6 +49,7 @@ var
 begin with Params do
   begin
     Code := CodeToolBoss.FindFile(UriToFilenameEx(textDocument.uri));
+    code.Revert;
     X := position.character;
     Y := position.line;
 

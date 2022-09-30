@@ -130,7 +130,70 @@ uses
 { TSignatureHelpRequest }
 
 function TSignatureHelpRequest.Process(var Params: TTextDocumentPositionParams): TSignatureHelp;
+  function FindBaseType(Tool: TFindDeclarationTool; Node: TCodeTreeNode;
+    var s: string;var ResultType:string): boolean;
+  var
+    Expr: TExpressionType;
+    Params: TFindDeclarationParams;
+    ExprTool: TFindDeclarationTool;
+    ExprNode: TCodeTreeNode;
+  begin
+    Result:=false;
+    Params:=TFindDeclarationParams.Create(Tool, Node);
+    try
+      try
+        Expr:=Tool.ConvertNodeToExpressionType(Node,Params);
+        if (Expr.Desc=xtContext) and (Expr.Context.Node<>nil) then begin
+          ExprTool:=Expr.Context.Tool;
+          ExprNode:=Expr.Context.Node;
+          if ExprNode.Desc=ctnReferenceTo then begin
+            ExprNode:=ExprNode.FirstChild;
+            if ExprNode=nil then exit;
+          end;
+          case ExprNode.Desc of
+          ctnProcedureType:
+            begin
+              ResultType := ExprTool.ExtractProcHead(ExprNode, [
+                phpWithoutClassName,   // skip classname
+                phpWithoutName,        // skip function name
+                phpWithoutGenericParams,// skip <> after proc name
+                phpWithoutParamList,   // skip param list
+                phpWithoutParamTypes,  // skip colon, param types and default values
+                phpWithoutBrackets,    // skip start- and end-bracket of parameter list
+                phpWithoutSemicolon,   // skip semicolon at end
+                phpWithResultType]);
 
+              s:=ExprTool.ExtractProcHead(ExprNode,
+                   [phpWithoutName,
+                         phpWithoutBrackets,
+                         phpWithoutSemicolon,
+                         phpWithVarModifiers,
+                         phpWithParameterNames,
+                         phpWithDefaultValues]);
+              Result:=true;
+            end;
+          ctnOpenArrayType,ctnRangedArrayType:
+            begin
+              s:=ExprTool.ExtractArrayRanges(ExprNode,[]);
+              Result:=true;
+            end;
+          end;
+        end else if Expr.Desc in (xtAllStringTypes+xtAllWideStringTypes-[xtShortString])
+        then begin
+          s:='[Index: 1..high(PtrUInt)]';
+          Result:=true;
+        end else if Expr.Desc=xtShortString then begin
+          s:='[Index: 0..255]';
+          Result:=true;
+        end;
+        //if not Result then
+        //  debugln(['TCodeContextFrm.CreateHints.FindBaseType: not yet supported: ',ExprTypeToString(Expr)]);
+      except
+      end;
+    finally
+      Params.Free;
+    end;
+  end;
   procedure ExtractProcParts(CurContext: TCodeContextInfoItem; out Code: String; out ParamList: TStringList);
   var
     Params, ResultType: String;
@@ -147,6 +210,27 @@ function TSignatureHelpRequest.Process(var Params: TTextDocumentPositionParams):
         CodeNode := CurExprType.Context.Node;
         CodeTool := CurExprType.Context.Tool;
         case CodeNode.Desc of
+          ctnVarDefinition:
+            begin
+              if FindBaseType(CodeTool,CodeNode,params,ResultType) then
+                begin
+                  if Params <> '' then
+                  begin
+                    ParamList := ParseParamList(Params);
+                    // rebuild the param list into a single string
+                    Params := '(';
+                    for i := 0 to ParamList.Count - 1 do
+                      begin
+                        Params += ParamList[i];
+                        if I < ParamList.Count - 1 then
+                          Params += '; ';
+                      end;
+                    Params += ')';
+                  end;
+                  Code := Params+ResultType;
+                end;
+
+            end;
           ctnProcedure:
             begin
               ResultType := CodeTool.ExtractProcHead(CodeNode, [

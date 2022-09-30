@@ -143,7 +143,7 @@ type
     property uri: TDocumentUri read fUri write fUri;
     property range: TRange read fRange write fRange;
   public
-    constructor Create(Path: String; Line, Column, Span: Integer); overload;
+    constructor Create(Path: String; Line, Column, EndLine,EndCol: Integer); overload;
   end;
 
   { TLocation }
@@ -408,6 +408,9 @@ type
     // CompleteCode.
     CompleteCode = 'CompleteCode';
 
+    //Get Unit Path
+    GetUnitPath = 'GetUnitPath';
+
   private
     value: string;
   end;
@@ -548,10 +551,10 @@ end;
 
 { TLocation }
 
-constructor TLocation.Create(Path: String; Line, Column, Span: Integer);
+constructor TLocation.Create(Path: String; Line, Column, EndLine,EndCol: Integer);
 begin
   uri := PathToURI(Path);
-  range := TRange.Create(Line, Column, Span);
+  range := TRange.Create(Line, Column, EndLine,EndCol);
 end;
 
 { TRange }

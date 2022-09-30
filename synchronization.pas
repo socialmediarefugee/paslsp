@@ -199,10 +199,13 @@ var
 begin with Params do
   begin
     Code := CodeToolBoss.FindFile(UriToFilenameEx(textDocument.uri));
+    code.Revert;
+
     if SymbolManager <> nil then
       SymbolManager.FileModified(Code);
+
     CheckSyntax(Code);
-    ClearDiagnostics(Code);
+    //ClearDiagnostics(Code);
     CodeUtilBoss.CheckInactiveRegion(Code,textDocument.uri);
   end;
 end;

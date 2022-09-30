@@ -22,9 +22,7 @@
 				"targetOS": "win64",
 				"outputFile": "",
 				"customOptions": [
-					//"-dSYMBOL_DEBUG",
 					"-dDEBUG",
-					//"-dCTDEBUG",
 					"-MObjFPC",
 					"-Scaghi",
 					"-CirotR",
@@ -34,7 +32,6 @@
 					"-Filib/x86_64-darwin",
 					"-Fi/Applications/Lazarus/lcl/include",
 					"-Fu/Applications/Lazarus/components/fpweb/lib/x86_64-darwin",
-					//"-Fu/Applications/Lazarus/components/sqldb/lib/x86_64-darwin/cocoa",
 					"-Fu/Applications/Lazarus/components/ideintf/units/x86_64-darwin/cocoa",
 					"-Fu/Applications/Lazarus/components/synedit/units/x86_64-darwin/cocoa",
 					"-Fu/Applications/Lazarus/components/lazcontrols/lib/x86_64-darwin/cocoa",
@@ -59,8 +56,7 @@
 			},
 			"problemMatcher": [],
 			"group": {
-				"kind": "build",
-				"isDefault": true
+				"kind": "build"
 			}
 		},
 		{
@@ -87,7 +83,6 @@
 					"-Filib/x86_64-darwin",
 					"-Fi/Applications/Lazarus/lcl/include",
 					"-Fu/Applications/Lazarus/components/fpweb/lib/x86_64-darwin",
-					//"-Fu/Applications/Lazarus/components/sqldb/lib/x86_64-darwin/cocoa",
 					"-Fu/Applications/Lazarus/components/ideintf/units/x86_64-darwin/cocoa",
 					"-Fu/Applications/Lazarus/components/synedit/units/x86_64-darwin/cocoa",
 					"-Fu/Applications/Lazarus/components/lazcontrols/lib/x86_64-darwin/cocoa",
@@ -107,10 +102,50 @@
 					"-FElib/x86_64-darwin",
 					"-o../fpctoolkit/bin/x86_64-darwin/pasls",
 					"-dLCL"
-					//"-dLCLcocoa"
+				]
+			},
+			"problemMatcher": []
+		},
+		{
+			"label": "debug-win",
+			"file": "pasls.lpr",
+			"type": "fpc",
+			"presentation": {
+				"showReuseMessage": false,
+				"clear": true,
+				"revealProblems": "onProblem"
+			},
+			"windows": {
+				"customOptions": [
+				]
+			},
+			"buildOption": {
+				"unitOutputDir": "./out",
+				"targetCPU": "i386",
+				"targetOS": "win32",
+				"outputFile": "",
+				"customOptions": [
+					"-dDEBUG",
+					"-MObjFPC",
+					"-Scaghi",
+					"-CirotR",
+					"-O1",
+					"-gw2",
+					"-l",
+					"-vewnhibq",
+					"-Filib/i386-win32",
+					"-FuC:/lazarus/components/codetools/units/i386-win32",
+					"-Fu.",
+					"-FUlib/i386-win32",
+					"-FE../fpctoolkit/bin/win32",
+					"-o../fpctoolkit/bin/win32/pasls.exe"
 				]
 			},
 			"problemMatcher": [],
+			"group": {
+				"kind": "build",
+				"isDefault": true
+			}
 		}
 	],
 	

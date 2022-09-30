@@ -233,7 +233,7 @@ begin with Params do
     begin
       Result := TCodeActionItems.Create;
       codeAction:=(Result.Add  as TCodeAction);
-      codeAction.title:='Complete Codes Here';
+      codeAction.title:='Code Completion';
       codeAction.kind:=TCodeActionKind.Refactor;
       codeAction.isPreferred:=false;
       codeAction.command:=TCommand.Create;

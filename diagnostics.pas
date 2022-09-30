@@ -93,37 +93,37 @@ var
   hasfile:Boolean;
 begin
   
-  if UserMessage <> '' then
-    writeln(stderr, UserMessage)
-  else
-    begin
-      if CodeToolBoss.ErrorCode <> nil then
-      begin
-        MessageString := CodeToolBoss.ErrorCode.FileName+' "'+CodeToolBoss.ErrorMessage+'" @ '+IntToStr(CodeToolBoss.ErrorLine-1)+':'+IntToStr(CodeToolBoss.ErrorColumn-1);
-        hasfile:=True;
-      end
-      else if CodeToolBoss.ErrorMessage <> '' then
-      begin
-        MessageString := '"'+CodeToolBoss.ErrorMessage+'" @ '+IntToStr(CodeToolBoss.ErrorLine-1)+':'+IntToStr(CodeToolBoss.ErrorColumn-1);
-        hasfile:=False;
-      end
-      else
-        // there's no error to show so bail
-        // probably PublishDiagnostic should not have been called
-        exit;
-
-      // print the erro to StdErr
-      writeln(StdErr, 'Syntax Error -> '+MessageString);
-
-      // Show message in the gui also
-      if ServerSettings.showSyntaxErrors then
-        begin
-          ShowMessage := TShowMessageNotification.Create(TMessageType.Error, MessageString,hasfile);
-          ShowMessage.Send;
-          ShowMessage.Free;
-        end;
-    end;
-  Flush(stderr);
+  //if UserMessage <> '' then
+  //  writeln(stderr, UserMessage)
+  //else
+  //  begin
+  //    if CodeToolBoss.ErrorCode <> nil then
+  //    begin
+  //      MessageString := CodeToolBoss.ErrorCode.FileName+' "'+CodeToolBoss.ErrorMessage+'" @ '+IntToStr(CodeToolBoss.ErrorLine-1)+':'+IntToStr(CodeToolBoss.ErrorColumn-1);
+  //      hasfile:=True;
+  //    end
+  //    else if CodeToolBoss.ErrorMessage <> '' then
+  //    begin
+  //      MessageString := '"'+CodeToolBoss.ErrorMessage+'" @ '+IntToStr(CodeToolBoss.ErrorLine-1)+':'+IntToStr(CodeToolBoss.ErrorColumn-1);
+  //      hasfile:=False;
+  //    end
+  //    else
+  //      // there's no error to show so bail
+  //      // probably PublishDiagnostic should not have been called
+  //      exit;
+  //
+  //    // print the erro to StdErr
+  //    writeln(StdErr, 'Syntax Error -> '+MessageString);
+  //
+  //    // Show message in the gui also
+  //    if ServerSettings.showSyntaxErrors then
+  //      begin
+  //        ShowMessage := TShowMessageNotification.Create(TMessageType.Error, MessageString,hasfile);
+  //        ShowMessage.Send;
+  //        ShowMessage.Free;
+  //      end;
+  //  end;
+  //Flush(stderr);
 
   if not ServerSettings.publishDiagnostics then
     exit;

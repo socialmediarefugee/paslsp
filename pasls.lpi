@@ -39,7 +39,6 @@
               <GenerateDebugInfo Value="False"/>
               <StripSymbols Value="True"/>
             </Debugging>
-            <LinkSmart Value="True"/>
           </Linking>
           <Other>
             <CustomOptions Value="-Xs"/>
@@ -97,6 +96,9 @@
             </Debugging>
             <LinkSmart Value="True"/>
           </Linking>
+          <Other>
+            <CustomOptions Value="-dSYMBOL_DEBUG"/>
+          </Other>
         </CompilerOptions>
       </Item4>
     </BuildModes>
@@ -233,4 +235,11 @@
       <CustomOptions Value="-dx86_64 -gw -godwarfcpp"/>
     </Other>
   </CompilerOptions>
+  <Debugging>
+    <Exceptions Count="1">
+      <Item1>
+        <Name Value="ECodeToolError"/>
+      </Item1>
+    </Exceptions>
+  </Debugging>
 </CONFIG>
