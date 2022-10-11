@@ -104,7 +104,8 @@
 					"-dLCL"
 				]
 			},
-			"problemMatcher": []
+			"problemMatcher": [],
+			"group": {}
 		},
 		{
 			"label": "debug-win",
@@ -116,15 +117,19 @@
 				"revealProblems": "onProblem"
 			},
 			"windows": {
-				"customOptions": [
-				]
+				"customOptions": []
 			},
 			"buildOption": {
 				"unitOutputDir": "./out",
 				"targetCPU": "i386",
 				"targetOS": "win32",
 				"outputFile": "",
+				"searchPath": [
+					"C:/Lazarus/components/codetools"
+				],
 				"customOptions": [
+					"-dLCL",
+					"-dLCLUTILS",
 					"-dDEBUG",
 					"-MObjFPC",
 					"-Scaghi",

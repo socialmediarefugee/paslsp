@@ -233,7 +233,16 @@ begin with Params do
     begin
       Result := TCodeActionItems.Create;
       codeAction:=(Result.Add  as TCodeAction);
-      codeAction.title:='Code Completion';
+      codeAction.title:='Remove unused units';
+      codeAction.kind:=TCodeActionKind.Source;
+      codeAction.isPreferred:=false;
+      codeAction.command:=TCommand.Create;
+      codeAction.command.title:=TCommandKind.RemoveUnusedUnit;
+      codeAction.command.command:=TCommandKind.RemoveUnusedUnit;
+      codeAction.command.arguments.Add(params.textDocument.uri);
+
+      codeAction:=(Result.Add  as TCodeAction);
+      codeAction.title:='Code completion';
       codeAction.kind:=TCodeActionKind.Refactor;
       codeAction.isPreferred:=false;
       codeAction.command:=TCommand.Create;
@@ -247,6 +256,7 @@ begin with Params do
       codeAction.command.arguments.add(inttostr( range.&end.line));
       codeAction.command.arguments.add(inttostr( range.&end.character));
 
+  
     end
     else
     begin

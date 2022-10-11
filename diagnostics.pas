@@ -69,7 +69,7 @@ type
   public
     constructor Create;
     destructor Destroy; override;
-    procedure Add(fileName, message: string; line, column, code: integer; severity: TDiagnosticSeverity);
+    procedure Add(fileName, message: string; line, column: integer; code:Int64; severity: TDiagnosticSeverity);
     procedure Clear(fileName: string);
   end;
 
@@ -135,8 +135,7 @@ begin
                        UserMessage, 
                        0, 
                        0, 
-                       // TODO: code tools error ID is too large (int64), what should we do?
-                       1{CodeToolBoss.ErrorID},
+                       CodeToolBoss.ErrorID,
                        TDiagnosticSeverity.Error);
       Notification.Send;
       Notification.Free;
@@ -148,8 +147,7 @@ begin
                        CodeToolBoss.ErrorMessage, 
                        CodeToolBoss.ErrorLine - 1, 
                        CodeToolBoss.ErrorColumn - 1, 
-                       // TODO: code tools error ID is too large (int64), what should we do?
-                       1{CodeToolBoss.ErrorID},
+                       CodeToolBoss.ErrorID,
                        TDiagnosticSeverity.Error);
       Notification.Send;
       Notification.Free;
@@ -162,6 +160,10 @@ procedure CheckSyntax(Code: TCodeBuffer);
 var
   Tool: TCodeTool;
   Notification: TPublishDiagnostics;
+  newCode:TCodeBuffer;
+  newX,newY,newTopLine:Integer;
+  errorMsg:String;
+
 begin
   if not ServerSettings.checkSyntax then
     exit;
@@ -170,12 +172,22 @@ begin
     PublishDiagnostic
   else if ServerSettings.publishDiagnostics then
     begin
-      // todo: when we have a document store we can check to see
-      // if we actually have any errors.
-      Notification := TPublishDiagnostics.Create;
-      Notification.Clear(Code.FileName);
-      Notification.Send;
-      Notification.Free;
+      // if not CodeToolBoss.CheckSyntax(Code,newCode,newx,newY,newTopLine,errorMsg) then
+      // begin
+      //   // todo: when we have a document store we can check to see
+      //   // if we actually have any errors.
+        Notification := TPublishDiagnostics.Create;
+        Notification.Clear(Code.FileName);
+        // Notification.Add(Code.Filename, 
+        //                errorMsg, 
+        //                newY+1, 
+        //                newX+1, 
+        //                CodeToolBoss.ErrorID,
+        //                TDiagnosticSeverity.Error);
+        Notification.Send;
+        Notification.Free;
+      // end;
+      
     end;
 end;
 
@@ -202,7 +214,7 @@ begin
   TPublishDiagnosticsParams(params).diagnostics.Clear;
 end;
 
-procedure TPublishDiagnostics.Add(fileName, message: string; line, column, code: integer; severity: TDiagnosticSeverity);
+procedure TPublishDiagnostics.Add(fileName, message: string; line, column: integer;code:Int64; severity: TDiagnosticSeverity);
 var
   Diagnostic: TDiagnostic;
 begin
@@ -211,7 +223,7 @@ begin
   Diagnostic := TDiagnostic(TPublishDiagnosticsParams(params).diagnostics.Add);
   Diagnostic.range := TRange.Create(line, column);
   Diagnostic.severity := severity;
-  Diagnostic.code := code;
+  Diagnostic.code := IntToStr(code);
   Diagnostic.source := 'Free Pascal Compiler';
   Diagnostic.message := message;
 end;

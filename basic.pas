@@ -26,7 +26,7 @@ unit basic;
 interface
 
 uses
-  Classes, SysUtils;
+  Classes, SysUtils,fgl,fpjson;
 
 type
 
@@ -128,6 +128,7 @@ type
     // The range's end position.
     property &end: TPosition read fEnd write fEnd;
   public
+    destructor Destroy; override;
     constructor Create(line, column: integer); overload;
     constructor Create(line, column, len: integer); overload;
     constructor Create(startLine, startColumn: integer; endLine, endColumn: integer); overload;
@@ -222,6 +223,9 @@ type
   private
     fRange: TRange;
     fNewText: string;
+  private
+    constructor Create(ACollection: TCollection); override;
+    destructor Destroy; override;
   published
     // The range of the text document to be manipulated. To insert
     // text into a document create a range where start === end.
@@ -279,6 +283,14 @@ type
     property position: TPosition read fPosition write fPosition;
   end;
   
+  { TRenameParams}
+  TRenameParams=class(TTextDocumentPositionParams)
+  private
+    fNewName:String;
+  published
+    property newName: string read fNewName write fNewName;
+  end;
+
   { TMarkupKind }
 
   { Describes the content type that a client supports in various
@@ -362,7 +374,7 @@ type
   private
     fRange: TRange;
     fSeverity: TDiagnosticSeverity;
-    fCode: integer;
+    fCode: string;
     fSource: string;
     fMessage: string;
     fTags: TDiagnosticTags;
@@ -376,7 +388,7 @@ type
     property severity: TDiagnosticSeverity read fSeverity write fSeverity;
 
     // The diagnostic's code, which might appear in the user interface.
-    property code: integer read fCode write fCode;
+    property code: string read fCode write fCode;
 
     // A human-readable string describing the source of this
     // diagnostic, e.g. 'typescript' or 'super lint'.
@@ -411,6 +423,9 @@ type
     //Get Unit Path
     GetUnitPath = 'GetUnitPath';
 
+    // Remove Unused Units
+    RemoveUnusedUnit='RemoveUnusedUnits';
+
   private
     value: string;
   end;
@@ -440,8 +455,31 @@ type
     If the client can handle versioned document edits and if documentChanges are present, 
     the latter are preferred over changes. }
 
+  { TChangeItems }
+
+  TChangeItems=class(TCollection)
+  private
+    function GetItems(Index: integer): TTextEdit;
+    procedure SetItems(Index: integer; AValue: TTextEdit);
+  public
+    constructor Create;
+  public
+    function Add: TTextEdit;
+    property Items[Index: integer]: TTextEdit read GetItems write SetItems; default;
+  end;
+  
+  TChangeDictory=specialize TFPGMap<TDocumentUri,TChangeItems>;
+
   TWorkspaceEdit = class (TPersistent)
-    // TODO: not implemented!
+  private
+    fChanges:TChangeDictory;
+  public
+    constructor Create();
+    destructor Destroy; override;
+
+    function ToJson():TJSONData;
+  published
+    property changes:TChangeDictory read fChanges write fChanges;
   end;
 
   {
@@ -490,7 +528,7 @@ function PathToURI(path: String): TDocumentUri;
 function UriToFilenameEx(uri:String):String;
 implementation
 uses
-  fpjson, lsp,URIParser;
+  lsp,URIParser;
 
 { Utilities }
 
@@ -558,6 +596,13 @@ begin
 end;
 
 { TRange }
+
+destructor TRange.Destroy;
+begin
+  if Assigned(fStart) then fStart.Free;
+  if Assigned(fEnd) then fEnd.Free;
+  inherited Destroy;
+end;
 
 constructor TRange.Create(line, column: integer);
 begin
@@ -663,6 +708,86 @@ end;
 constructor TGenericCollection.Create;
 begin
   inherited Create(T);
+end;
+
+constructor TWorkspaceEdit.Create;
+begin
+  self.changes:=TChangeDictory.Create;
+  inherited Create;
+end;
+
+destructor TWorkspaceEdit.Destroy;
+var i:Integer;
+begin
+  if Assigned(self.changes) then
+  begin
+    for i := 0 to self.changes.Count-1 do
+    begin
+      self.changes.Data[i].Free;
+    end;
+    self.changes.Free;
+  end;
+  inherited Destroy;
+end;
+
+function TWorkspaceEdit.ToJson: TJSONData;
+var json:TJSONObject;
+  data:TJSONData;
+  key:TDocumentUri;
+  val:TTextEdit;
+  Items:TChangeItems;
+  i:Integer;
+begin
+
+  json:=TJSONObject.Create;
+
+   for i := 0 to self.changes.Count-1 do
+   begin
+     key:=self.changes.Keys[i];
+     Items:=self.changes.Data[i];
+     data:=specialize TLSPStreaming<TChangeItems>.ToJSON(Items);
+
+     json.Add(key,data);
+   end;
+   Result:=TJSONObject.Create;
+   TJSONObject(Result).Add('changes',json);
+  
+ 
+end;
+
+function TChangeItems.GetItems(Index: integer): TTextEdit;
+begin
+  Result := TTextEdit(inherited Items[Index]);
+end;
+
+procedure TChangeItems.SetItems(Index: integer; AValue: TTextEdit);
+begin
+  Items[Index].Assign(AValue);
+end;
+
+constructor TChangeItems.Create;
+begin
+  inherited Create(TTextEdit);
+end;
+
+function TChangeItems.Add: TTextEdit;
+begin
+  Result := inherited Add as TTextEdit;
+end;
+
+constructor TTextEdit.Create(ACollection: TCollection);
+begin
+  self.fRange:=TRange.Create(0,0);
+  inherited Create(ACollection);
+end;
+
+destructor TTextEdit.Destroy;
+begin
+  if Assigned(self.range) then
+  begin
+    FreeAndNil(self.fRange);
+  end;
+  inherited Destroy;
 end;
 
 end.

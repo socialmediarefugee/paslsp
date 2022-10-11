@@ -24,7 +24,7 @@ unit capabilities;
 interface
 
 uses
-  Classes, options, documentSymbol, settings;
+  Classes, options, documentSymbol, settings,basic;
 
 type
 
@@ -117,6 +117,8 @@ type
     //The server provides execute command support.
     fexecuteCommandProvider: TExecuteCommandOptions;
 
+    frenameProvider:TRenameOptions;
+
   public
     constructor Create(settings: TServerSettings);
   published
@@ -134,6 +136,7 @@ type
     property workspaceSymbolProvider: boolean read fWorkspaceSymbolProvider write fWorkspaceSymbolProvider;
     property signatureHelpProvider: TSignatureHelpOptions read fSignatureHelpProvider write fSignatureHelpProvider;
     property executeCommandProvider: TExecuteCommandOptions read fexecuteCommandProvider write fexecuteCommandProvider;
+    property renameProvider:TRenameOptions read frenameProvider write frenameProvider;
   end;
 
 implementation
@@ -189,11 +192,20 @@ begin
 
   codeActionProvider:=TCodeActionOptions.Create;
   codeActionProvider.codeActionKinds.Add(TCodeActionKind.Refactor);
+  codeActionProvider.codeActionKinds.Add(TCodeActionKind.Source);
+  codeActionProvider.codeActionKinds.Add(TCodeActionKind.QuickFix);
+  
   codeActionProvider.resolveProvider:=false;
+
+  renameProvider:=TRenameOptions.Create;
+  renameProvider.prepareProvider:=false;
+  renameProvider.workDoneProgress:=false;
 
   executeCommandProvider:=TExecuteCommandOptions.Create;
   executeCommandProvider.commands:=TStringList.Create;
-  executeCommandProvider.commands.Add('CompleteCode');
+  executeCommandProvider.commands.Add(TCommandKind.CompleteCode);
+  executeCommandProvider.commands.Add(TCommandKind.RemoveUnusedUnit);
+  
 end;
 
 end.

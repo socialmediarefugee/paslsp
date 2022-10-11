@@ -30,7 +30,7 @@ uses
 
   { Protocols }
   basic, synchronization, completion, gotoDeclaration, gotoDefinition, 
-  gotoImplementation, hover, signatureHelp, references, codeAction, 
+  gotoImplementation, hover, signatureHelp, references, codeAction, rename,
   documentHighlight, documentSymbol, workspace, window, diagnostics, settings,
 
   {Other}

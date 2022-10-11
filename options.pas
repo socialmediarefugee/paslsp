@@ -153,6 +153,14 @@ type
    property commands:TStrings read fcommands write fcommands;
  end;
 
+ TRenameOptions=class(TPersistent)
+ private
+   fprepareProvider:boolean;
+   fworkDoneProgress:boolean;
+ published
+  property prepareProvider:boolean read fprepareProvider write fprepareProvider;
+  property workDoneProgress:boolean read fworkDoneProgress write fworkDoneProgress;
+ end;
 implementation
 
 { TCodeActionOptions }

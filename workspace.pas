@@ -125,6 +125,7 @@ type
   private
      function DoCommandComplateCode(params:TExecuteCommandParams):TExecuteCommandParams;
      function GetUnitPath(params:TExecuteCommandParams):TExecuteCommandParams;
+     function RemoveUnusedUnits(params:TExecuteCommandParams):TExecuteCommandParams;
 
   end;
 
@@ -141,8 +142,9 @@ begin
   if Params.command=TCommandKind.CompleteCode then
     result:= self.DoCommandComplateCode(Params)
   else if Params.command=TCommandKind.GetUnitPath then
-    result:= self.GetUnitPath(params);
-
+    result:= self.GetUnitPath(params)
+  else if Params.command=TCommandKind.RemoveUnusedUnit then
+    result:=self.RemoveUnusedUnits(Params);
 end;
 
 function TExecuteCommand.DoCommandComplateCode(params: TExecuteCommandParams):TExecuteCommandParams;
@@ -218,6 +220,41 @@ begin
     result.arguments.Add(CodeToolBoss.FindUnitInUnitSet('',uname));
   end;
 
+end;
+
+function TExecuteCommand.RemoveUnusedUnits(params: TExecuteCommandParams
+  ): TExecuteCommandParams;
+var 
+  uri,fileName,_unit:String;
+  code:TCodeBuffer;
+  units:TStringList;
+  i:Integer;
+begin
+  result:=TExecuteCommandParams.Create;
+  result.command:=params.command;
+  uri:=params.arguments.Strings[0];
+  URIToFilename(uri,fileName);
+  Code := CodeToolBoss.FindFile(fileName);
+  if Code=nil then
+  Code:=CodeToolBoss.LoadFile(fileName,true,false);
+  if Code=nil then exit;
+  units:=TStringList.Create;
+  try
+    if not CodeToolBoss.FindUnusedUnits(code,units) then exit;
+    for i := 0 to units.Count-1 do
+    begin
+      _unit:=units.Strings[i];
+      if not _unit.EndsWith('used') then
+      CodeToolBoss.RemoveUnitFromAllUsesSections(code,units.Names[i]);
+    end;
+    Code.save;
+
+  finally
+    units.free;
+  end;
+  
+  
+  
 end;
 
 { TDidChangeConfiguration }
