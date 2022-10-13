@@ -139,14 +139,14 @@
 				"customOptions": [
 					"-dLCL",
 					"-dLCLUTILS",
-					"-MObjFPC"
-					// "-Scaghi",
-					// "-CirotR",
-					// "-l",
-					// "-Xs",
-					// "-CX",
-					// "-XX",
-					//"-vewnhibq"
+					"-MObjFPC",
+					"-Scaghi",
+					"-CirotR",
+					"-l",
+					"-Xs",
+					"-CX",
+					"-XX",
+					"-vewnhibq"
 				]
 			}
 		},
@@ -159,6 +159,9 @@
 				"targetCPU": "i386",
 				"targetOS": "win32",
 				"outputFile": "../fpctoolkit/bin/win32/pasls.exe",
+				"searchPath": [
+					"C:/Lazarus/components/codetools"
+				],
 				"customOptions": [
 					"-FuC:/lazarus/components/codetools/units/i386-win32"
 				]
