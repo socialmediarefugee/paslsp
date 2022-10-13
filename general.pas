@@ -514,7 +514,7 @@ begin with Params do
 
     if DirectoryExists(CodeToolsOptions.LazarusSrcDir) then
       begin
-           fpcTarget:=CodeToolsOptions.TargetOS+'-'+CodeToolsOptions.TargetProcessor;
+        fpcTarget:=CodeToolsOptions.TargetOS+'-'+CodeToolsOptions.TargetProcessor;
         //CodeToolBoss.DefinePool.CreateLCLProjectTemplate();
         UnitPathTemplate:=TDefineTemplate.Create('UnitPath', 'Unit Path',
           UnitPathMacroName,
@@ -522,7 +522,8 @@ begin with Params do
           {$IFDEF MSWINDOWS}
           CodeToolsOptions.LazarusSrcDir+'/lcl/units/'+fpcTarget+'/win32;'+
           {$ENDIF}
-          CodeToolsOptions.LazarusSrcDir+'/components/lazutils/lib/'+fpcTarget+
+          CodeToolsOptions.LazarusSrcDir+'/components/lazutils/;'+
+          CodeToolsOptions.LazarusSrcDir+'/components/lazutils/lib/'+fpcTarget+';'+
           CodeToolsOptions.LazarusSrcDir+'/packager/units/'+fpcTarget,
           da_Define);
         IncPathTemplate:=TDefineTemplate.Create('IncPath','Inc Path',

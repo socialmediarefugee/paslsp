@@ -1,4 +1,3 @@
 {
-    "omnipascal.defaultDevelopmentEnvironment": "FreePascal",
-    "omnipascal.searchPath": "/Applications/Lazarus/components/*;/Applications/Lazarus/lcl/*"
+  //  "fpctoolkit.pasls.path": "Z:\\fpc\\fpcextend\\fpctoolkit\\bin\\win32\\pasls.exe"
 }

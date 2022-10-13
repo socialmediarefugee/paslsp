@@ -67,7 +67,7 @@ end;
 procedure TestNotifications;
 var
   params: TShowMessageParams;
-  notification: TTestNotification;
+  //notification: TTestNotification;
   data: TJSONData;
   Dispatcher: TLSPDispatcher;
 begin
@@ -77,7 +77,7 @@ begin
 
   Dispatcher := TLSPDispatcher.Create(nil);
 
-  notification := TTestNotification.Create(nil);
+  //notification := TTestNotification.Create(nil);
   //function TLSPDispatcher.ExecuteMethod(const AClassName, AMethodName: TJSONStringType;
   //  Params, ID: TJSONData; AContext: TJSONRPCCallContext): TJSONData;
 
@@ -94,12 +94,11 @@ var
   Header, Name, Value, Content: string;
   I, Length: Integer;
   Request, Response: TJSONData;
-  ShowMessage: TShowMessageNotification;
   VerboseDebugging: boolean = false;
 begin
   //TestNotifications;
   //halt;
-
+  Length:=0;
   Dispatcher := TLSPDispatcher.Create(nil);
   TJSONData.CompressedJSON := True;
   SetTextLineEnding(Input, #13#10);

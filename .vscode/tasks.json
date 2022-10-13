@@ -3,7 +3,7 @@
 	
 	"tasks": [
 		{
-			"label": "debug",
+			"label": "debug-macos",
 			"file": "pasls.lpr",
 			"type": "fpc",
 			"presentation": {
@@ -60,14 +60,9 @@
 			}
 		},
 		{
-			"label": "release",
+			"label": "release-macos",
 			"file": "pasls.lpr",
 			"type": "fpc",
-			"presentation": {
-				"showReuseMessage": false,
-				"clear": true,
-				"revealProblems": "onProblem"
-			},
 			"buildOption": {
 				"unitOutputDir": "./out",
 				"targetCPU": "x86_64",
@@ -111,45 +106,91 @@
 			"label": "debug-win",
 			"file": "pasls.lpr",
 			"type": "fpc",
-			"presentation": {
-				"showReuseMessage": false,
-				"clear": true,
-				"revealProblems": "onProblem"
-			},
+			"inherited": "base",
 			"windows": {
 				"customOptions": []
 			},
 			"buildOption": {
-				"unitOutputDir": "./out",
-				"targetCPU": "i386",
-				"targetOS": "win32",
-				"outputFile": "",
+				"targetCPU": "x86_64",
+				"targetOS": "win64",
+				"outputFile": "../fpctoolkit/bin/win32/pasls.exe",
+				"optimizationLevel": 1,
 				"searchPath": [
 					"C:/Lazarus/components/codetools"
 				],
 				"customOptions": [
-					"-dLCL",
-					"-dLCLUTILS",
 					"-dDEBUG",
-					"-MObjFPC",
-					"-Scaghi",
-					"-CirotR",
-					"-O1",
 					"-gw2",
-					"-l",
-					"-vewnhibq",
-					"-Filib/i386-win32",
-					"-FuC:/lazarus/components/codetools/units/i386-win32",
-					"-Fu.",
-					"-FUlib/i386-win32",
-					"-FE../fpctoolkit/bin/win32",
-					"-o../fpctoolkit/bin/win32/pasls.exe"
+					"-FuC:/lazarus/components/codetools/units/x86_64-win64"
 				]
 			},
-			"problemMatcher": [],
 			"group": {
 				"kind": "build",
 				"isDefault": true
+			}
+		},
+		{
+			"label": "base",
+			"file": "pasls.lpr",
+			"type": "fpc",
+			"buildOption": {
+				"unitOutputDir": "./out",
+				"optimizationLevel": 3,
+				"customOptions": [
+					"-dLCL",
+					"-dLCLUTILS",
+					"-MObjFPC"
+					// "-Scaghi",
+					// "-CirotR",
+					// "-l",
+					// "-Xs",
+					// "-CX",
+					// "-XX",
+					//"-vewnhibq"
+				]
+			}
+		},
+		{
+			"label": "release-win",
+			"file": "pasls.lpr",
+			"type": "fpc",
+			"inherited": "base",
+			"buildOption": {
+				"targetCPU": "i386",
+				"targetOS": "win32",
+				"outputFile": "../fpctoolkit/bin/win32/pasls.exe",
+				"customOptions": [
+					"-FuC:/lazarus/components/codetools/units/i386-win32"
+				]
+			}
+		},
+		{
+			"label": "release-x86_64-linux",
+			"file": "pasls.lpr",
+			"type": "fpc",
+			"inherited": "base",
+			"buildOption": {
+				"targetOS": "linux",
+				"targetCPU": "x86_64",
+				"outputFile": "../fpctoolkit/bin/x86_64-linux/pasls",
+				"customOptions": [
+					"-FuC:/lazarus/components/codetools/units/x86_64-linux"
+				]
+			}
+		},
+		{
+			"label": "release-aarch64-linux",
+			"file": "pasls.lpr",
+			"type": "fpc",
+			"inherited": "base",
+			"buildOption": {
+				"targetOS": "linux",
+				"targetCPU": "aarch64",
+				"outputFile": "../fpctoolkit/bin/aarch64-linux/pasls",
+				"customOptions": [
+					"-FuC:/lazarus/components/codetools/units/aarch64-linux",
+					"-FuC:/lazarus/components/codetools"
+				]
 			}
 		}
 	],

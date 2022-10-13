@@ -295,6 +295,7 @@ begin
   Input := specialize TLSPStreaming<T>.ToObject(Params);
   Process(Input);
   Input.Free;
+  Result:=Nil;
 end;
 
 { TLSPDispatcher }

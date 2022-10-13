@@ -24,16 +24,13 @@
                 }
             ]
         },
-
-
-
         {
             "type": "by-gdb",
             "request": "attach",
             "name": "Attach(gdb)",
-            "program": "${workspaceRoot}/lib/x86_64-darwin/pasls",
-            "cwd": "${workspaceRoot}",
-            "processId":  5683
+            "program": "pasls",
+            "debuggerPath": "C:\\lazarus\\mingw\\x86_64-win64\\bin\\gdb.exe",
+            "cwd": "${workspaceRoot}"
         },
         {
             "name": "(lldb) 附加",
