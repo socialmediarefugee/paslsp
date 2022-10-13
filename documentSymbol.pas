@@ -793,7 +793,7 @@ begin
   //  containerName:=Tool.ExtractClassName(ParentNode,False,true,false);
   Name := Tool.ExtractProcName(Node, [phpWithoutClassName]);
 
-  key:=containerName+'.'+Name;
+  key:=IntToStr(CodeSection)+'.'+containerName+'.'+Name;
   Symbol := TSymbol(OverloadMap.Find(key));
   if Symbol <> nil then
     begin
