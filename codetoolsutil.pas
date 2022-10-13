@@ -145,7 +145,6 @@ var
   Defines: TExpressionEvaluator;
   i: integer;
 
-  Value: string;
   OldOnCalculate: TDefTreeCalculate;
   DefineTree: TDefineTree;
 
@@ -280,12 +279,15 @@ begin
   try
     for i:=0 to Scanner.DirectiveCount-1 do begin
       Dir:=Scanner.Directives[i];
+      if(Dir^.Code<>Pointer(Code)) then Continue;
       content:=ExtractCommentContent(Scanner.CleanedSrc,Dir^.CleanPos,Scanner.NestedComments);
+      {$IfDef DEBUG}
       DebugLn([i,'/',Scanner.DirectiveCount,
         ' CleanPos=',Dir^.CleanPos,'=',Scanner.CleanedPosToStr(Dir^.CleanPos),
         ' Level=',Dir^.Level,' ',dbgs(Dir^.State),
-        ' "',content,'"']
+        ' "',content,'"',Dir^.Code]
         );
+      {$EndIf}
       if Dir^.State=lsdsInactive then
       begin
         if not isAdd then
