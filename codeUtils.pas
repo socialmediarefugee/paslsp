@@ -71,6 +71,7 @@ function ParseParamList(RawList: String): TStringList; overload;
 function ParseParamList(RawList: String; AsSnippet: boolean): String; overload;
 
 function ConvertBytesToHumanReadable(bytes: cardinal): ShortString;
+procedure PrintIdentifierTree(Identifier: TIdentifierListItem);
 
 implementation
 
@@ -205,7 +206,12 @@ begin
           DetailString := 'Unit '+UnitName
         // show contants values as details
         else if Identifier.Node.Desc = ctnConstDefinition then
-          DetailString := Identifier.Tool.ExtractNode(Identifier.Node, []);
+        begin
+          //DetailString := Identifier.Tool.ExtractNode(Identifier.Node, []);
+          Node:=Identifier.Tool.FindTypeNodeOfDefinition(Identifier.Node);
+          if Node<>nil then
+            DetailString:=Identifier.Tool.ExtractNode(Node,[]);
+        end;
       end;
     ctnEnumIdentifier:
       begin

@@ -103,6 +103,8 @@ begin
   TJSONData.CompressedJSON := True;
   SetTextLineEnding(Input, #13#10);
   SetTextLineEnding(Output, #13#10);
+  SetTextCodePage(Input,CP_UTF8);
+  SetTextCodePage(Output,CP_UTF8);
   
   while not EOF do
   begin
