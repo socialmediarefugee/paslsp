@@ -35,6 +35,7 @@ type
 
   // How a completion was triggered
   TCompletionTriggerKind = (
+    __UNUSED__ = 0,
     // Completion was triggered by typing an identifier (24x7 code
     // complete), manual invocation (e.g Ctrl+Space) or via API.
     Invoked = 1,
@@ -81,6 +82,7 @@ type
   // Defines whether the insert text in a completion item should be
   // interpreted as plain text or a snippet.
   TInsertTextFormat = (
+    __UNUSED__ = 0,
     // The primary text to be inserted is treated as a plain string.
     PlainText = 1,
     // The primary text to be inserted is treated as a snippet.
@@ -98,6 +100,7 @@ type
   //
   // @since 3.15.0
   TCompletionItemTag = (
+    __UNUSED__ = 0,
     // Render a completion as obsolete, usually using a strike-out.
     Deprecated = 1);
 
@@ -107,6 +110,7 @@ type
 
   // The kind of a completion entry.
   TCompletionItemKind = (
+    __UNUSED__ = 0,
     TextItem = 1,
     MethodItem = 2,
     FunctionItem = 3,

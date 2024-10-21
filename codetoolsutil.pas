@@ -7,7 +7,7 @@ interface
 uses
   Classes, SysUtils, FileProcs, LazUtils, LazUtilities,
   // Codetools
-  Laz_AVL_Tree, ExprEval,DefineTemplates,CodeToolManager,CodeCache,LinkScanner,sourcelog,
+  AVL_Tree, ExprEval,DefineTemplates,CodeToolManager,CodeCache,LinkScanner,sourcelog,
   BasicCodeTools,
   //pasls
   inactiveRegions;

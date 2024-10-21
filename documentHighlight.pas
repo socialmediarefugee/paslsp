@@ -31,6 +31,7 @@ uses
 
 type
   TDocumentHighlightKind = (
+      __UNUSED__ = 0,
       // A textual occurrence.
       Text = 1,
       // Read-access of a symbol, like reading a variable.

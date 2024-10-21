@@ -36,6 +36,7 @@ type
   { TMessageType }
 
   TMessageType = (
+    __UNUSED__ = 0,
     // An error message.
     Error = 1,
     // A warning message.

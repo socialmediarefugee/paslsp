@@ -20,7 +20,7 @@
         <CompilerOptions>
           <Version Value="11"/>
           <Target>
-            <Filename Value="../fpctoolkit/bin/x86_64-darwin/pasls"/>
+            <Filename Value="paslsp"/>
           </Target>
           <SearchPaths>
             <IncludeFiles Value="$(ProjOutDir)"/>
@@ -49,7 +49,7 @@
         <CompilerOptions>
           <Version Value="11"/>
           <Target>
-            <Filename Value="../fpctoolkit/bin/win32/pasls.exe"/>
+            <Filename Value="paslsp.exe"/>
           </Target>
           <SearchPaths>
             <IncludeFiles Value="$(ProjOutDir)"/>
@@ -202,7 +202,7 @@
   <CompilerOptions>
     <Version Value="11"/>
     <Target>
-      <Filename Value="/Users/xuming/zhongzhuo/fpc/fpcextend/fpctoolkit/bin/$(TargetCPU)-$(TargetOS)/pasls"/>
+      <Filename Value="$(TargetCPU)-$(TargetOS)/pasls"/>
     </Target>
     <SearchPaths>
       <IncludeFiles Value="$(ProjOutDir)"/>

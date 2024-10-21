@@ -508,7 +508,7 @@ begin with Params do
       begin
         Init(CodeToolsOptions);
         IdentifierList.SortForHistory := True;
-        IdentifierList.SortForScope := True;
+        //IdentifierList.SortForScope := True;
         //CatchExceptions:=True;
       end;
 

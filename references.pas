@@ -29,7 +29,7 @@ uses
   { CodeTools }
   URIParser, CodeToolManager, CodeCache, CTUnitGraph,
   { LazUtils }
-  LazFileUtils, Laz_AVL_Tree,
+  LazFileUtils, AVL_Tree,
   { LSP }
   lsp, basic, general;
 

@@ -31,6 +31,7 @@ uses
 
 type
   TSymbolKind = (
+    __UNUSED__ = 0,
     SymbolKindFile = 1,
     SymbolKindModule = 2,
     SymbolKindNamespace = 3,

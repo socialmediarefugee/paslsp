@@ -27,7 +27,7 @@ uses
   Classes, URIParser, CodeToolManager, CodeCache, BasicCodeTools,
   lsp, basic,fpjson,fpjsonrpc,avl_tree, CTUnitGraph ,settings,
   { LazUtils }
-  LazFileUtils, Laz_AVL_Tree;
+  LazFileUtils;
 
 type
 

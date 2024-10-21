@@ -335,7 +335,8 @@ type
   { TDiagnostic }
 
 
-  TDiagnosticSeverity = ( Error = 1,
+  TDiagnosticSeverity = ( __UNUSED__ = 0, 
+                          Error = 1,
                           Warning = 2,
                           Information = 3,
                           Hint = 4

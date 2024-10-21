@@ -32,7 +32,9 @@ const
   kSymbolName_Implementation = 'implementation';
 
 type
-  TOverloadPolicy = ( Duplicates = 1,  // duplicate function names appear in the list
+
+  TOverloadPolicy = ( __UNUSED__ = 0, 
+    				  Duplicates = 1,  // duplicate function names appear in the list
                       Ignore = 2,      // after the original definition ignore others
                       Suffix = 3       // add a suffix which denotes the overload count
                       );

@@ -30,7 +30,7 @@ uses
 
   { Protocols }
   basic, synchronization, completion, gotoDeclaration, gotoDefinition, 
-  gotoImplementation, hover, signatureHelp, references, codeAction, rename,
+  gotoImplementation, gotoTypeDefinition, hover, signatureHelp, references, codeAction, rename,
   documentHighlight, documentSymbol, workspace, window, diagnostics, settings,
 
   {Other}
@@ -47,12 +47,12 @@ type
   { TMyLogger }
 
   TMyLogger=class(TLazLogger)
-    procedure DoDebugLn(s: string); override;
+    procedure DoDebugLn(s: string; AGroup: PLazLoggerLogGroup = nil); override;
   end;
 
 { TMyLogger }
 
-procedure TMyLogger.DoDebugLn(s: string);
+procedure TMyLogger.DoDebugLn(s: string; AGroup: PLazLoggerLogGroup);
 begin
   WriteLn(StdErr,s);
   Flush(StdErr);
